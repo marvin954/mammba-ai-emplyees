@@ -1,0 +1,16 @@
+# Clean URLs
+/receptionist     /ai-receptionist.html     200
+/sales            /ai-sales-rep.html        200
+/marketing        /ai-marketing-specialist.html  200
+/customer-success /ai-customer-success.html 200
+/csm              /ai-customer-success.html 200
+/funnel           /sales-funnel.html        200
+
+# Aliases
+/nexus            /ai-receptionist.html     200
+/apex             /ai-sales-rep.html        200
+/prism            /ai-marketing-specialist.html  200
+/retain           /ai-customer-success.html 200
+
+# 404 fallback
+/*                /404.html                 404

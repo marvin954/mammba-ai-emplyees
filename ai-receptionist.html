@@ -1,0 +1,1717 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Nexus — AI Receptionist</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap');
+
+  :root {
+    --night: #080C14;
+    --ink: #0F1724;
+    --slate: #1A2538;
+    --wire: #243048;
+    --pulse: #00E5FF;
+    --pulse-dim: rgba(0,229,255,0.12);
+    --pulse-glow: rgba(0,229,255,0.4);
+    --sage: #7FFFD4;
+    --warn: #FF6B6B;
+    --snow: #EEF2F8;
+    --mist: #8A9BB5;
+    --font-sans: 'Space Grotesk', sans-serif;
+    --font-mono: 'Space Mono', monospace;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--night);
+    color: var(--snow);
+    font-family: var(--font-sans);
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  /* ── GRID BACKGROUND ── */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,229,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,229,255,0.03) 1px, transparent 1px);
+    background-size: 48px 48px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ── NAV ── */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 48px;
+    background: rgba(8,12,20,0.85);
+    backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--wire);
+  }
+
+  .logo {
+    font-family: var(--font-mono);
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--pulse);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+  .logo span { color: var(--snow); }
+
+  nav ul {
+    list-style: none;
+    display: flex;
+    gap: 40px;
+  }
+  nav ul a {
+    color: var(--mist);
+    text-decoration: none;
+    font-size: 0.875rem;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    transition: color 0.2s;
+  }
+  nav ul a:hover { color: var(--snow); }
+
+  .nav-cta {
+    background: var(--pulse);
+    color: var(--night) !important;
+    padding: 8px 20px;
+    border-radius: 4px;
+    font-weight: 700 !important;
+    transition: opacity 0.2s !important;
+  }
+  .nav-cta:hover { opacity: 0.85; }
+
+  /* ── HERO ── */
+  .hero {
+    position: relative;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    padding: 120px 48px 80px;
+    z-index: 1;
+  }
+
+  .hero-content { max-width: 680px; }
+
+  .eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--pulse);
+    margin-bottom: 28px;
+  }
+  .eyebrow::before {
+    content: '';
+    display: block;
+    width: 24px; height: 1px;
+    background: var(--pulse);
+  }
+
+  h1 {
+    font-size: clamp(2.8rem, 6vw, 5rem);
+    font-weight: 700;
+    line-height: 1.05;
+    letter-spacing: -0.03em;
+    margin-bottom: 24px;
+  }
+  h1 .accent { color: var(--pulse); }
+  h1 .dim { color: var(--mist); }
+
+  .hero-sub {
+    font-size: 1.15rem;
+    color: var(--mist);
+    line-height: 1.7;
+    max-width: 520px;
+    margin-bottom: 44px;
+  }
+
+  .hero-actions {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .btn-primary {
+    background: var(--pulse);
+    color: var(--night);
+    border: none;
+    padding: 14px 32px;
+    font-family: var(--font-sans);
+    font-size: 0.95rem;
+    font-weight: 700;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: box-shadow 0.2s, transform 0.15s;
+    letter-spacing: 0.02em;
+  }
+  .btn-primary:hover {
+    box-shadow: 0 0 28px var(--pulse-glow);
+    transform: translateY(-1px);
+  }
+
+  .btn-ghost {
+    background: transparent;
+    color: var(--snow);
+    border: 1px solid var(--wire);
+    padding: 14px 32px;
+    font-family: var(--font-sans);
+    font-size: 0.95rem;
+    font-weight: 600;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: border-color 0.2s, color 0.2s;
+  }
+  .btn-ghost:hover { border-color: var(--pulse); color: var(--pulse); }
+
+  /* FLOATING PHONE VISUAL */
+  .hero-visual {
+    position: absolute;
+    right: 48px;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 2;
+  }
+
+  .phone-frame {
+    width: 280px;
+    background: var(--ink);
+    border: 1px solid var(--wire);
+    border-radius: 24px;
+    overflow: hidden;
+    box-shadow: 0 0 80px rgba(0,229,255,0.15), 0 40px 80px rgba(0,0,0,0.5);
+    animation: float 6s ease-in-out infinite;
+  }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-12px); }
+  }
+
+  .phone-status {
+    background: var(--slate);
+    padding: 12px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    color: var(--mist);
+    border-bottom: 1px solid var(--wire);
+  }
+
+  .call-indicator {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--sage);
+    font-weight: 700;
+  }
+  .call-dot {
+    width: 6px; height: 6px;
+    background: var(--sage);
+    border-radius: 50%;
+    animation: blink 1.5s ease-in-out infinite;
+  }
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+
+  .phone-body { padding: 20px; }
+
+  .caller-info {
+    text-align: center;
+    padding: 16px 0 20px;
+    border-bottom: 1px solid var(--wire);
+    margin-bottom: 16px;
+  }
+
+  .avatar-ring {
+    width: 56px; height: 56px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--pulse), var(--sage));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 10px;
+    font-size: 1.4rem;
+  }
+
+  .caller-name {
+    font-weight: 700;
+    font-size: 0.95rem;
+    margin-bottom: 2px;
+  }
+  .caller-sub {
+    font-size: 0.72rem;
+    color: var(--mist);
+    font-family: var(--font-mono);
+  }
+
+  .chat-bubble {
+    background: var(--slate);
+    border-radius: 12px 12px 12px 2px;
+    padding: 10px 14px;
+    font-size: 0.78rem;
+    color: var(--snow);
+    margin-bottom: 10px;
+    line-height: 1.5;
+    border-left: 2px solid var(--pulse);
+    opacity: 0;
+    animation: slidein 0.4s ease forwards;
+  }
+  .chat-bubble:nth-child(1) { animation-delay: 0.5s; }
+  .chat-bubble:nth-child(2) { animation-delay: 1.4s; }
+  .chat-bubble:nth-child(3) { animation-delay: 2.5s; }
+
+  .chat-bubble.reply {
+    background: var(--pulse-dim);
+    border-radius: 12px 12px 2px 12px;
+    border-left: none;
+    border-right: 2px solid var(--sage);
+    color: var(--sage);
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+  }
+
+  @keyframes slidein {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .action-chip {
+    display: inline-block;
+    background: rgba(127,255,212,0.1);
+    border: 1px solid rgba(127,255,212,0.3);
+    color: var(--sage);
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    padding: 4px 10px;
+    border-radius: 20px;
+    margin-top: 6px;
+    opacity: 0;
+    animation: slidein 0.4s ease 3.4s forwards;
+  }
+
+  /* ── STATS TICKER ── */
+  .stats-bar {
+    position: relative;
+    z-index: 1;
+    border-top: 1px solid var(--wire);
+    border-bottom: 1px solid var(--wire);
+    background: var(--ink);
+    padding: 28px 48px;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0;
+  }
+
+  .stat-item {
+    padding: 0 32px;
+    border-right: 1px solid var(--wire);
+  }
+  .stat-item:first-child { padding-left: 0; }
+  .stat-item:last-child { border-right: none; }
+
+  .stat-num {
+    font-family: var(--font-mono);
+    font-size: 2.2rem;
+    font-weight: 700;
+    color: var(--pulse);
+    letter-spacing: -0.04em;
+    line-height: 1;
+    margin-bottom: 6px;
+  }
+  .stat-label {
+    font-size: 0.8rem;
+    color: var(--mist);
+    font-weight: 500;
+  }
+
+  /* ── SECTION SHARED ── */
+  section {
+    position: relative;
+    z-index: 1;
+    padding: 100px 48px;
+  }
+
+  .section-label {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--pulse);
+    margin-bottom: 16px;
+  }
+
+  h2 {
+    font-size: clamp(2rem, 4vw, 3rem);
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+    margin-bottom: 20px;
+  }
+
+  .sub {
+    font-size: 1.05rem;
+    color: var(--mist);
+    max-width: 540px;
+    line-height: 1.7;
+    margin-bottom: 60px;
+  }
+
+  /* ── FEATURES ── */
+  .features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1px;
+    background: var(--wire);
+    border: 1px solid var(--wire);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  .feature-card {
+    background: var(--ink);
+    padding: 36px 32px;
+    transition: background 0.2s;
+  }
+  .feature-card:hover { background: var(--slate); }
+
+  .feature-icon {
+    width: 44px; height: 44px;
+    border-radius: 8px;
+    background: var(--pulse-dim);
+    border: 1px solid rgba(0,229,255,0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.3rem;
+    margin-bottom: 20px;
+  }
+
+  .feature-title {
+    font-size: 1.05rem;
+    font-weight: 700;
+    margin-bottom: 10px;
+    color: var(--snow);
+  }
+
+  .feature-desc {
+    font-size: 0.875rem;
+    color: var(--mist);
+    line-height: 1.65;
+  }
+
+  /* ── LIVE DEMO ── */
+  #demo {
+    background: var(--ink);
+    border-top: 1px solid var(--wire);
+    border-bottom: 1px solid var(--wire);
+  }
+
+  .demo-wrapper {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 48px;
+    align-items: start;
+  }
+
+  .demo-panel {
+    background: var(--night);
+    border: 1px solid var(--wire);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  .panel-header {
+    background: var(--slate);
+    padding: 14px 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-bottom: 1px solid var(--wire);
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    color: var(--mist);
+  }
+
+  .dot { width: 10px; height: 10px; border-radius: 50%; }
+  .dot-red { background: #FF5F57; }
+  .dot-yellow { background: #FFBD2E; }
+  .dot-green { background: #28C840; }
+
+  .panel-title { margin-left: 4px; color: var(--snow); font-weight: 700; }
+
+  .chat-window {
+    height: 380px;
+    overflow-y: auto;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    scroll-behavior: smooth;
+  }
+
+  .chat-window::-webkit-scrollbar { width: 4px; }
+  .chat-window::-webkit-scrollbar-track { background: transparent; }
+  .chat-window::-webkit-scrollbar-thumb { background: var(--wire); border-radius: 2px; }
+
+  .msg {
+    max-width: 80%;
+    padding: 10px 14px;
+    border-radius: 12px;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    animation: slidein 0.3s ease;
+  }
+
+  .msg-ai {
+    background: var(--slate);
+    border-left: 2px solid var(--pulse);
+    align-self: flex-start;
+    color: var(--snow);
+  }
+
+  .msg-user {
+    background: var(--pulse-dim);
+    border: 1px solid rgba(0,229,255,0.2);
+    align-self: flex-end;
+    color: var(--pulse);
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+  }
+
+  .msg-system {
+    align-self: center;
+    background: rgba(127,255,212,0.08);
+    border: 1px solid rgba(127,255,212,0.2);
+    color: var(--sage);
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    padding: 6px 14px;
+    border-radius: 20px;
+    max-width: 100%;
+    text-align: center;
+  }
+
+  .typing-indicator {
+    display: none;
+    align-items: center;
+    gap: 4px;
+    padding: 10px 14px;
+    background: var(--slate);
+    border-left: 2px solid var(--pulse);
+    border-radius: 12px;
+    width: fit-content;
+  }
+  .typing-indicator.show { display: flex; }
+  .typing-dot {
+    width: 6px; height: 6px;
+    background: var(--pulse);
+    border-radius: 50%;
+    animation: bounce 1.2s ease-in-out infinite;
+  }
+  .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+  .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes bounce {
+    0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; }
+    40% { transform: scale(1); opacity: 1; }
+  }
+
+  .chat-input-row {
+    display: flex;
+    gap: 0;
+    border-top: 1px solid var(--wire);
+  }
+
+  .chat-input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: var(--snow);
+    font-family: var(--font-sans);
+    font-size: 0.875rem;
+    padding: 14px 18px;
+  }
+  .chat-input::placeholder { color: var(--mist); }
+
+  .chat-send {
+    background: var(--pulse);
+    border: none;
+    color: var(--night);
+    padding: 14px 20px;
+    font-family: var(--font-sans);
+    font-weight: 700;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: opacity 0.15s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .chat-send:hover { opacity: 0.85; }
+  .chat-send:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  /* CONFIG PANEL */
+  .config-panel { padding: 24px; }
+
+  .config-group { margin-bottom: 24px; }
+  .config-label {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--mist);
+    margin-bottom: 10px;
+  }
+
+  .biz-search-wrap {
+    position: relative;
+    margin-bottom: 10px;
+  }
+  .biz-search {
+    width: 100%;
+    background: var(--slate);
+    border: 1px solid var(--wire);
+    border-radius: 6px;
+    color: var(--snow);
+    font-family: var(--font-sans);
+    font-size: 0.8rem;
+    padding: 8px 12px 8px 32px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .biz-search:focus { border-color: var(--pulse); }
+  .biz-search::placeholder { color: var(--mist); }
+  .biz-search-icon {
+    position: absolute;
+    left: 10px; top: 50%;
+    transform: translateY(-50%);
+    color: var(--mist);
+    font-size: 0.8rem;
+    pointer-events: none;
+  }
+
+  .biz-category-label {
+    font-family: var(--font-mono);
+    font-size: 0.62rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--mist);
+    margin: 10px 0 6px;
+    opacity: 0.7;
+  }
+
+  .business-chips-scroll {
+    max-height: 200px;
+    overflow-y: auto;
+    padding-right: 4px;
+  }
+  .business-chips-scroll::-webkit-scrollbar { width: 3px; }
+  .business-chips-scroll::-webkit-scrollbar-track { background: transparent; }
+  .business-chips-scroll::-webkit-scrollbar-thumb { background: var(--wire); border-radius: 2px; }
+
+  .business-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .chip {
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1px solid var(--wire);
+    background: var(--slate);
+    color: var(--mist);
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+  .chip:hover { border-color: rgba(0,229,255,0.3); color: var(--snow); }
+  .chip.active {
+    background: var(--pulse-dim);
+    border-color: var(--pulse);
+    color: var(--pulse);
+  }
+  .chip.hidden { display: none; }
+
+  .no-results {
+    font-size: 0.78rem;
+    color: var(--mist);
+    padding: 8px 0;
+    display: none;
+  }
+
+  .config-input {
+    width: 100%;
+    background: var(--slate);
+    border: 1px solid var(--wire);
+    border-radius: 6px;
+    color: var(--snow);
+    font-family: var(--font-sans);
+    font-size: 0.875rem;
+    padding: 10px 14px;
+    outline: none;
+    resize: vertical;
+    transition: border-color 0.2s;
+  }
+  .config-input:focus { border-color: var(--pulse); }
+
+  .status-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 16px;
+    background: var(--slate);
+    border-radius: 8px;
+    margin-bottom: 8px;
+    font-size: 0.85rem;
+  }
+
+  .status-badge {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-weight: 700;
+  }
+  .badge-on { background: rgba(127,255,212,0.15); color: var(--sage); border: 1px solid rgba(127,255,212,0.3); }
+  .badge-off { background: rgba(138,155,181,0.15); color: var(--mist); border: 1px solid var(--wire); }
+
+  /* TOGGLE */
+  .toggle-wrap { display: flex; align-items: center; gap: 10px; }
+  .toggle {
+    position: relative;
+    width: 40px; height: 22px;
+    cursor: pointer;
+  }
+  .toggle input { opacity: 0; width: 0; height: 0; }
+  .slider {
+    position: absolute;
+    inset: 0;
+    background: var(--wire);
+    border-radius: 22px;
+    transition: background 0.2s;
+  }
+  .slider::before {
+    content: '';
+    position: absolute;
+    height: 16px; width: 16px;
+    left: 3px; top: 3px;
+    background: var(--mist);
+    border-radius: 50%;
+    transition: transform 0.2s, background 0.2s;
+  }
+  .toggle input:checked + .slider { background: rgba(0,229,255,0.25); }
+  .toggle input:checked + .slider::before { transform: translateX(18px); background: var(--pulse); }
+  .toggle-label { font-size: 0.875rem; color: var(--mist); }
+
+  /* ── HOW IT WORKS ── */
+  .flow-steps {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0;
+    position: relative;
+  }
+  .flow-steps::before {
+    content: '';
+    position: absolute;
+    top: 28px;
+    left: calc(12.5% + 20px);
+    right: calc(12.5% + 20px);
+    height: 1px;
+    background: linear-gradient(90deg, var(--pulse), transparent 30%, transparent 70%, var(--pulse));
+    border-top: 1px dashed var(--wire);
+  }
+
+  .flow-step { text-align: center; padding: 0 24px; }
+
+  .step-num {
+    width: 56px; height: 56px;
+    border-radius: 50%;
+    background: var(--ink);
+    border: 1px solid var(--wire);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 20px;
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--pulse);
+    position: relative;
+    z-index: 1;
+  }
+  .step-num::after {
+    content: '';
+    position: absolute;
+    inset: -4px;
+    border-radius: 50%;
+    border: 1px solid var(--pulse-dim);
+  }
+
+  .step-title {
+    font-weight: 700;
+    font-size: 1rem;
+    margin-bottom: 8px;
+    color: var(--snow);
+  }
+
+  .step-desc {
+    font-size: 0.83rem;
+    color: var(--mist);
+    line-height: 1.6;
+  }
+
+  /* ── PRICING ── */
+  .pricing-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    max-width: 960px;
+    margin: 0 auto;
+  }
+
+  .price-card {
+    background: var(--ink);
+    border: 1px solid var(--wire);
+    border-radius: 12px;
+    padding: 40px 32px;
+    position: relative;
+    transition: border-color 0.2s, transform 0.2s;
+  }
+  .price-card:hover { transform: translateY(-4px); }
+  .price-card.featured {
+    border-color: var(--pulse);
+    background: linear-gradient(180deg, rgba(0,229,255,0.05) 0%, var(--ink) 60%);
+  }
+
+  .featured-badge {
+    position: absolute;
+    top: -12px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--pulse);
+    color: var(--night);
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 4px 14px;
+    border-radius: 20px;
+  }
+
+  .plan-name {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--mist);
+    margin-bottom: 12px;
+  }
+
+  .plan-price {
+    font-size: 2.8rem;
+    font-weight: 700;
+    letter-spacing: -0.04em;
+    color: var(--snow);
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+  .plan-price span { font-size: 1rem; color: var(--mist); font-weight: 400; }
+
+  .plan-tagline {
+    font-size: 0.85rem;
+    color: var(--mist);
+    margin-bottom: 28px;
+    padding-bottom: 28px;
+    border-bottom: 1px solid var(--wire);
+  }
+
+  .plan-features {
+    list-style: none;
+    margin-bottom: 32px;
+  }
+  .plan-features li {
+    font-size: 0.875rem;
+    color: var(--mist);
+    padding: 7px 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .plan-features li::before {
+    content: '✓';
+    color: var(--pulse);
+    font-weight: 700;
+    font-size: 0.85rem;
+    flex-shrink: 0;
+  }
+
+  /* ── CTA SECTION ── */
+  .cta-section {
+    text-align: center;
+    padding: 120px 48px;
+    position: relative;
+    z-index: 1;
+    overflow: hidden;
+  }
+
+  .cta-glow {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 600px; height: 400px;
+    background: radial-gradient(ellipse at center, rgba(0,229,255,0.08) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .cta-section h2 { margin-bottom: 20px; }
+  .cta-section .sub { margin: 0 auto 48px; }
+
+  /* ── FOOTER ── */
+  footer {
+    position: relative;
+    z-index: 1;
+    border-top: 1px solid var(--wire);
+    padding: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--ink);
+  }
+
+  footer .logo { font-size: 0.95rem; }
+  .footer-links { display: flex; gap: 32px; }
+  .footer-links a {
+    font-size: 0.8rem;
+    color: var(--mist);
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+  .footer-links a:hover { color: var(--pulse); }
+
+  footer .copy { font-size: 0.78rem; color: var(--mist); font-family: var(--font-mono); }
+
+  /* ── MODAL ── */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    z-index: 200;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(8px);
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--ink);
+    border: 1px solid var(--wire);
+    border-radius: 16px;
+    padding: 48px;
+    max-width: 480px;
+    width: 90%;
+    position: relative;
+    box-shadow: 0 0 80px rgba(0,229,255,0.1);
+  }
+  .modal h3 { font-size: 1.5rem; margin-bottom: 8px; }
+  .modal p { font-size: 0.9rem; color: var(--mist); margin-bottom: 28px; }
+  .modal-close {
+    position: absolute;
+    top: 16px; right: 20px;
+    background: none; border: none;
+    color: var(--mist); font-size: 1.4rem;
+    cursor: pointer; transition: color 0.2s;
+  }
+  .modal-close:hover { color: var(--snow); }
+  .form-row { margin-bottom: 16px; }
+  .form-row label { display: block; font-size: 0.8rem; color: var(--mist); margin-bottom: 6px; font-family: var(--font-mono); }
+  .form-row input, .form-row select {
+    width: 100%;
+    background: var(--slate);
+    border: 1px solid var(--wire);
+    border-radius: 6px;
+    color: var(--snow);
+    font-family: var(--font-sans);
+    font-size: 0.875rem;
+    padding: 10px 14px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .form-row input:focus, .form-row select:focus { border-color: var(--pulse); }
+  .form-row select option { background: var(--slate); }
+
+  /* RESPONSIVE */
+  @media (max-width: 900px) {
+    nav ul { display: none; }
+    .hero { flex-direction: column; padding: 100px 24px 60px; }
+    .hero-visual { position: static; transform: none; margin-top: 48px; }
+    .phone-frame { width: 100%; max-width: 320px; }
+    .stats-bar { grid-template-columns: repeat(2, 1fr); padding: 24px; gap: 20px; }
+    .stat-item { border-right: none; padding: 0; }
+    section { padding: 64px 24px; }
+    .demo-wrapper { grid-template-columns: 1fr; }
+    .flow-steps { grid-template-columns: repeat(2, 1fr); gap: 32px; }
+    .flow-steps::before { display: none; }
+    .pricing-grid { grid-template-columns: 1fr; }
+    footer { flex-direction: column; gap: 24px; text-align: center; }
+    .footer-links { flex-wrap: wrap; justify-content: center; }
+    nav { padding: 16px 24px; }
+    .hero-visual { width: 100%; display: flex; justify-content: center; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="logo">Nexus<span>AI</span></div>
+  <ul>
+    <li><a href="#features">Features</a></li>
+    <li><a href="#demo">Live Demo</a></li>
+    <li><a href="#how">How It Works</a></li>
+    <li><a href="#pricing">Pricing</a></li>
+    <li><a href="#" class="nav-cta" onclick="openModal(); return false;">Get Started</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-content">
+    <div class="eyebrow">AI Receptionist</div>
+    <h1>
+      Never miss<br>
+      <span class="accent">another call.</span><br>
+      <span class="dim">Ever.</span>
+    </h1>
+    <p class="hero-sub">
+      Nexus answers inbound calls 24/7, qualifies and routes leads, books appointments, and handles after-hours inquiries — so your team focuses on what only humans can do.
+    </p>
+    <div class="hero-actions">
+      <button class="btn-primary" onclick="document.getElementById('demo').scrollIntoView({behavior:'smooth'})">Try Live Demo</button>
+      <button class="btn-ghost" onclick="openModal()">Book a Call</button>
+    </div>
+  </div>
+
+  <div class="hero-visual">
+    <div class="phone-frame">
+      <div class="phone-status">
+        <div class="call-indicator">
+          <span class="call-dot"></span> LIVE CALL
+        </div>
+        <span>00:02:47</span>
+      </div>
+      <div class="phone-body">
+        <div class="caller-info">
+          <div class="avatar-ring">👤</div>
+          <div class="caller-name">Sarah Mitchell</div>
+          <div class="caller-sub">+1 (305) 555-0182 · Inbound</div>
+        </div>
+        <div class="chat-bubble">Hi, I need to schedule a dental appointment for next Tuesday if possible?</div>
+        <div class="chat-bubble reply">Of course! I can see Tuesday the 3rd has a 10:00 AM and 2:30 PM available. Which works best?</div>
+        <div class="chat-bubble">2:30 PM works great for me!</div>
+        <div class="action-chip">✓ Appointment booked · Cal invite sent</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- STATS -->
+<div class="stats-bar">
+  <div class="stat-item">
+    <div class="stat-num">24/7</div>
+    <div class="stat-label">Always answering, no hold music</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-num">&lt;2s</div>
+    <div class="stat-label">Average response time</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-num">97%</div>
+    <div class="stat-label">Call resolution rate</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-num">0</div>
+    <div class="stat-label">Missed leads after hours</div>
+  </div>
+</div>
+
+<!-- FEATURES -->
+<section id="features">
+  <div class="section-label">Core Capabilities</div>
+  <h2>Your front desk,<br>supercharged.</h2>
+  <p class="sub">Nexus handles every inbound interaction with the professionalism of your best employee — without breaks, sick days, or overtime.</p>
+
+  <div class="features-grid">
+    <div class="feature-card">
+      <div class="feature-icon">📞</div>
+      <div class="feature-title">Answers Inbound Calls 24/7</div>
+      <div class="feature-desc">Every call is answered in under 2 seconds. No voicemail, no hold music. Nexus greets callers by name when recognized and provides immediate assistance around the clock.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🎯</div>
+      <div class="feature-title">Lead Qualification & Routing</div>
+      <div class="feature-desc">Asks the right questions to qualify leads instantly, then routes hot prospects to your sales team via SMS, Slack, or direct transfer — with a full conversation summary attached.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">📅</div>
+      <div class="feature-title">Appointment Booking</div>
+      <div class="feature-desc">Syncs with Google Calendar, Calendly, and most booking systems. Finds open slots, confirms appointments, sends reminders, and handles rescheduling automatically.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🌙</div>
+      <div class="feature-title">After-Hours Intelligence</div>
+      <div class="feature-desc">When your office is closed, Nexus keeps working. Captures inquiry details, answers FAQs from your knowledge base, and delivers full transcripts to your team each morning.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🧠</div>
+      <div class="feature-title">Trained on Your Business</div>
+      <div class="feature-desc">Upload your FAQs, service list, pricing, and policies. Nexus learns your business deeply and responds with your exact voice — no hallucinations, no off-script answers.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">📊</div>
+      <div class="feature-title">Real-Time Analytics</div>
+      <div class="feature-desc">Every call is logged, transcribed, and analyzed. Track call volume, resolution rates, appointment conversion, and peak hours from your live dashboard.</div>
+    </div>
+  </div>
+</section>
+
+<!-- LIVE DEMO -->
+<section id="demo">
+  <div class="section-label">Interactive Demo</div>
+  <h2>Talk to Nexus now.</h2>
+  <p class="sub">Configure your business type below and have a real conversation with your AI receptionist. No signup required.</p>
+
+  <div class="demo-wrapper">
+    <div class="demo-panel">
+      <div class="panel-header">
+        <div class="dot dot-red"></div>
+        <div class="dot dot-yellow"></div>
+        <div class="dot dot-green"></div>
+        <span class="panel-title">Live Receptionist Chat</span>
+        <span style="margin-left:auto; color:var(--sage); font-size:0.7rem;">● ONLINE</span>
+      </div>
+      <div class="chat-window" id="chatWindow">
+        <div class="msg msg-system">Connected to Nexus AI · Session encrypted</div>
+        <div class="msg msg-ai" id="welcomeMsg"></div>
+        <div class="typing-indicator" id="typingIndicator">
+          <div class="typing-dot"></div>
+          <div class="typing-dot"></div>
+          <div class="typing-dot"></div>
+        </div>
+      </div>
+      <div class="chat-input-row">
+        <input type="text" class="chat-input" id="chatInput" placeholder="Type your message..." />
+        <button class="chat-send" id="sendBtn" onclick="sendMessage()">
+          Send →
+        </button>
+      </div>
+    </div>
+
+    <div>
+      <div class="demo-panel" style="margin-bottom: 20px;">
+        <div class="panel-header">
+          <div class="dot dot-red"></div>
+          <div class="dot dot-yellow"></div>
+          <div class="dot dot-green"></div>
+          <span class="panel-title">Receptionist Config</span>
+        </div>
+        <div class="config-panel">
+          <div class="config-group">
+            <div class="config-label">Business Type <span style="color:var(--mist);font-size:0.65rem;font-family:var(--font-mono);">(20 industries)</span></div>
+            <div class="biz-search-wrap">
+              <span class="biz-search-icon">🔍</span>
+              <input type="text" class="biz-search" id="bizSearch" placeholder="Search industry..." oninput="filterBizTypes(this.value)" />
+            </div>
+            <div class="business-chips-scroll" id="bizChipsScroll">
+              <div class="biz-category-label">Healthcare</div>
+              <div class="business-chips">
+                <div class="chip active" data-key="dental" data-label="Dental" onclick="setBiz(this,'dental')">🦷 Dental</div>
+                <div class="chip" data-key="medical" data-label="Medical" onclick="setBiz(this,'medical')">🏥 Medical</div>
+                <div class="chip" data-key="mental-health" data-label="Mental Health" onclick="setBiz(this,'mental-health')">🧠 Mental Health</div>
+                <div class="chip" data-key="chiro" data-label="Chiropractic" onclick="setBiz(this,'chiro')">🦴 Chiropractic</div>
+                <div class="chip" data-key="optometry" data-label="Optometry" onclick="setBiz(this,'optometry')">👁️ Optometry</div>
+              </div>
+              <div class="biz-category-label">Legal &amp; Finance</div>
+              <div class="business-chips">
+                <div class="chip" data-key="law" data-label="Law Firm" onclick="setBiz(this,'law')">⚖️ Law Firm</div>
+                <div class="chip" data-key="accounting" data-label="Accounting" onclick="setBiz(this,'accounting')">📊 Accounting</div>
+                <div class="chip" data-key="insurance" data-label="Insurance" onclick="setBiz(this,'insurance')">🛡️ Insurance</div>
+                <div class="chip" data-key="financial" data-label="Financial Advisor" onclick="setBiz(this,'financial')">💰 Financial</div>
+              </div>
+              <div class="biz-category-label">Home &amp; Auto</div>
+              <div class="business-chips">
+                <div class="chip" data-key="real-estate" data-label="Real Estate" onclick="setBiz(this,'real-estate')">🏠 Real Estate</div>
+                <div class="chip" data-key="auto" data-label="Auto Shop" onclick="setBiz(this,'auto')">🚗 Auto Shop</div>
+                <div class="chip" data-key="hvac" data-label="HVAC" onclick="setBiz(this,'hvac')">❄️ HVAC</div>
+                <div class="chip" data-key="plumbing" data-label="Plumbing" onclick="setBiz(this,'plumbing')">🔧 Plumbing</div>
+                <div class="chip" data-key="cleaning" data-label="Cleaning" onclick="setBiz(this,'cleaning')">🧹 Cleaning</div>
+              </div>
+              <div class="biz-category-label">Beauty &amp; Wellness</div>
+              <div class="business-chips">
+                <div class="chip" data-key="spa" data-label="Spa Salon" onclick="setBiz(this,'spa')">💆 Spa / Salon</div>
+                <div class="chip" data-key="fitness" data-label="Fitness Gym" onclick="setBiz(this,'fitness')">💪 Fitness / Gym</div>
+                <div class="chip" data-key="vet" data-label="Veterinary" onclick="setBiz(this,'vet')">🐾 Veterinary</div>
+              </div>
+              <div class="biz-category-label">Hospitality &amp; Retail</div>
+              <div class="business-chips">
+                <div class="chip" data-key="restaurant" data-label="Restaurant" onclick="setBiz(this,'restaurant')">🍽️ Restaurant</div>
+                <div class="chip" data-key="hotel" data-label="Hotel" onclick="setBiz(this,'hotel')">🏨 Hotel / B&amp;B</div>
+                <div class="chip" data-key="ecommerce" data-label="eCommerce" onclick="setBiz(this,'ecommerce')">🛒 eCommerce</div>
+              </div>
+              <div class="no-results" id="noResults">No industries match your search.</div>
+            </div>
+          </div>
+          <div class="config-group">
+            <div class="config-label">Business Name</div>
+            <input type="text" class="config-input" id="bizName" value="Bright Smile Dental" placeholder="Your business name..." />
+          </div>
+          <div class="config-group">
+            <div class="config-label">Special Instructions</div>
+            <textarea class="config-input" id="bizInstructions" rows="3" placeholder="e.g. We offer free consultations. Emergency same-day slots available.">We're accepting new patients. Emergency appointments available same-day. We accept most major insurance.</textarea>
+          </div>
+        </div>
+      </div>
+
+      <div class="demo-panel">
+        <div class="panel-header">
+          <span class="panel-title">Receptionist Status</span>
+        </div>
+        <div class="config-panel" style="padding: 16px;">
+          <div class="status-row">
+            <span>Answering Calls</span>
+            <div class="toggle-wrap">
+              <label class="toggle"><input type="checkbox" checked /><span class="slider"></span></label>
+              <span class="status-badge badge-on">ACTIVE</span>
+            </div>
+          </div>
+          <div class="status-row">
+            <span>Appointment Booking</span>
+            <div class="toggle-wrap">
+              <label class="toggle"><input type="checkbox" checked /><span class="slider"></span></label>
+              <span class="status-badge badge-on">ACTIVE</span>
+            </div>
+          </div>
+          <div class="status-row">
+            <span>After-Hours Mode</span>
+            <div class="toggle-wrap">
+              <label class="toggle"><input type="checkbox" /><span class="slider"></span></label>
+              <span class="status-badge badge-off">OFF HOURS</span>
+            </div>
+          </div>
+          <div class="status-row">
+            <span>Lead Routing</span>
+            <div class="toggle-wrap">
+              <label class="toggle"><input type="checkbox" checked /><span class="slider"></span></label>
+              <span class="status-badge badge-on">ACTIVE</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section id="how">
+  <div class="section-label">Process</div>
+  <h2>Up and running in<br>under 24 hours.</h2>
+  <p class="sub">No developers needed. Connect your phone number, train Nexus on your business, and go live today.</p>
+
+  <div class="flow-steps">
+    <div class="flow-step">
+      <div class="step-num">01</div>
+      <div class="step-title">Connect Your Number</div>
+      <div class="step-desc">Forward your existing business number to Nexus, or get a new local number. Works with any carrier.</div>
+    </div>
+    <div class="flow-step">
+      <div class="step-num">02</div>
+      <div class="step-title">Train on Your Business</div>
+      <div class="step-desc">Upload your FAQs, services, pricing, and policies. Nexus learns your voice and business logic in minutes.</div>
+    </div>
+    <div class="flow-step">
+      <div class="step-num">03</div>
+      <div class="step-title">Connect Your Calendar</div>
+      <div class="step-desc">Sync Google Calendar, Calendly, or your booking system so Nexus can check availability and confirm appointments in real time.</div>
+    </div>
+    <div class="flow-step">
+      <div class="step-num">04</div>
+      <div class="step-title">Go Live</div>
+      <div class="step-desc">Flip the switch. Nexus starts handling every call immediately. Monitor conversations live from your dashboard.</div>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section id="pricing" style="background: var(--ink); border-top: 1px solid var(--wire); border-bottom: 1px solid var(--wire);">
+  <div style="text-align: center; margin-bottom: 60px;">
+    <div class="section-label">Pricing</div>
+    <h2>One flat rate.<br>Unlimited calls.</h2>
+    <p class="sub" style="margin: 0 auto;">No per-minute charges. No surprise overage fees. Your AI receptionist works around the clock for one predictable monthly cost.</p>
+  </div>
+
+  <div class="pricing-grid">
+    <div class="price-card">
+      <div class="plan-name">Starter</div>
+      <div class="plan-price">$149<span>/mo</span></div>
+      <div class="plan-tagline">Perfect for solo practices and small offices</div>
+      <ul class="plan-features">
+        <li>Up to 500 calls/month</li>
+        <li>24/7 call answering</li>
+        <li>Appointment booking</li>
+        <li>Email transcripts</li>
+        <li>1 business number</li>
+        <li>Basic analytics dashboard</li>
+      </ul>
+      <button class="btn-ghost" style="width:100%" onclick="openModal()">Get Started</button>
+    </div>
+
+    <div class="price-card featured">
+      <div class="featured-badge">Most Popular</div>
+      <div class="plan-name">Professional</div>
+      <div class="plan-price">$349<span>/mo</span></div>
+      <div class="plan-tagline">For growing businesses that never slow down</div>
+      <ul class="plan-features">
+        <li>Unlimited calls</li>
+        <li>24/7 call answering</li>
+        <li>Appointment booking + reminders</li>
+        <li>Lead qualification & routing</li>
+        <li>Slack / SMS alerts</li>
+        <li>3 business numbers</li>
+        <li>Advanced analytics + CRM sync</li>
+        <li>Custom voice & persona</li>
+      </ul>
+      <button class="btn-primary" style="width:100%" onclick="openModal()">Get Started</button>
+    </div>
+
+    <div class="price-card">
+      <div class="plan-name">Enterprise</div>
+      <div class="plan-price">Custom</div>
+      <div class="plan-tagline">Multi-location, franchise, or high-volume</div>
+      <ul class="plan-features">
+        <li>Everything in Professional</li>
+        <li>Unlimited locations</li>
+        <li>API & CRM integrations</li>
+        <li>Custom AI training pipeline</li>
+        <li>Dedicated success manager</li>
+        <li>SLA guarantee</li>
+        <li>White-label option</li>
+      </ul>
+      <button class="btn-ghost" style="width:100%" onclick="openModal()">Contact Sales</button>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section">
+  <div class="cta-glow"></div>
+  <div class="section-label">Get Started Today</div>
+  <h2>Your next missed call<br>should be your last.</h2>
+  <p class="sub">Join 2,400+ businesses that have replaced voicemail with an AI receptionist that actually converts.</p>
+  <div style="display:flex; gap:16px; justify-content:center; flex-wrap:wrap;">
+    <button class="btn-primary" onclick="openModal()">Start Free Trial — 14 Days</button>
+    <button class="btn-ghost" onclick="document.getElementById('demo').scrollIntoView({behavior:'smooth'})">Try the Demo First</button>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="logo">Nexus<span>AI</span></div>
+  <div class="footer-links">
+    <a href="#">Features</a>
+    <a href="#">Pricing</a>
+    <a href="#">Integrations</a>
+    <a href="#">Blog</a>
+    <a href="#">Privacy</a>
+    <a href="#">Terms</a>
+  </div>
+  <div class="copy">© 2025 NexusAI · All rights reserved</div>
+</footer>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modalOverlay" onclick="if(event.target===this)closeModal()">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal()">×</button>
+    <h3>Start your free trial</h3>
+    <p>Set up your AI receptionist in 24 hours. No credit card required for 14 days.</p>
+    <div class="form-row">
+      <label>FULL NAME</label>
+      <input type="text" placeholder="Your name" />
+    </div>
+    <div class="form-row">
+      <label>BUSINESS EMAIL</label>
+      <input type="email" placeholder="you@company.com" />
+    </div>
+    <div class="form-row">
+      <label>BUSINESS TYPE</label>
+      <select>
+        <optgroup label="Healthcare">
+          <option>Dental</option>
+          <option>Medical / Primary Care</option>
+          <option>Mental Health / Therapy</option>
+          <option>Chiropractic</option>
+          <option>Optometry</option>
+        </optgroup>
+        <optgroup label="Legal &amp; Finance">
+          <option>Law Firm</option>
+          <option>Accounting / Tax</option>
+          <option>Insurance Agency</option>
+          <option>Financial Advisor</option>
+        </optgroup>
+        <optgroup label="Home &amp; Auto">
+          <option>Real Estate</option>
+          <option>Auto Shop / Tire</option>
+          <option>HVAC</option>
+          <option>Plumbing</option>
+          <option>Cleaning Service</option>
+        </optgroup>
+        <optgroup label="Beauty &amp; Wellness">
+          <option>Spa / Salon</option>
+          <option>Fitness / Gym</option>
+          <option>Veterinary</option>
+        </optgroup>
+        <optgroup label="Hospitality &amp; Retail">
+          <option>Restaurant</option>
+          <option>Hotel / B&amp;B</option>
+          <option>eCommerce / Retail</option>
+        </optgroup>
+        <optgroup label="Other">
+          <option>Other / Custom</option>
+        </optgroup>
+      </select>
+    </div>
+    <div class="form-row">
+      <label>PHONE NUMBER</label>
+      <input type="tel" placeholder="+1 (305) 555-0100" />
+    </div>
+    <button class="btn-primary" style="width:100%; margin-top:8px;">Activate Free Trial →</button>
+  </div>
+</div>
+
+<script>
+// ── BUSINESS TYPES CONFIG (20 industries) ──
+const bizConfigs = {
+  // ── HEALTHCARE ──
+  'dental': {
+    name: 'Bright Smile Dental',
+    instructions: "Accepting new patients. Emergency same-day slots available. Accept most PPO insurance.",
+    system: "You are Nexus, the AI receptionist for Bright Smile Dental. Help callers book dental appointments, answer questions about cleanings, fillings, crowns, whitening, and implants, insurance coverage, and office hours. Warm, professional, and efficient. Office hours: Mon-Fri 8am-5pm, Sat 9am-2pm. Emergency slots available same-day."
+  },
+  'medical': {
+    name: 'Sunrise Medical Center',
+    instructions: "Accepting new patients. Telehealth available. Urgent care walk-ins welcome.",
+    system: "You are Nexus, the AI receptionist for Sunrise Medical Center. Help patients schedule appointments, understand services, check insurance, and navigate urgent vs. routine care. For emergencies always direct to 911. Telehealth available. Walk-in urgent care open 8am-8pm daily."
+  },
+  'mental-health': {
+    name: 'Clarity Counseling & Therapy',
+    instructions: "Individual, couples, and family therapy. Sliding-scale fees available. Telehealth sessions offered.",
+    system: "You are Nexus, the AI receptionist for Clarity Counseling & Therapy. You are compassionate, calm, and non-judgmental. Help callers schedule initial consultations or ongoing therapy sessions, learn about therapists' specialties (anxiety, depression, trauma, couples), understand session fees and insurance, and access telehealth options. Always acknowledge callers' courage in reaching out. For crisis situations, provide the 988 Suicide & Crisis Lifeline number."
+  },
+  'chiro': {
+    name: 'Align Chiropractic Care',
+    instructions: "New patient specials available. Sports injury and auto accident specialists. Walk-ins welcome.",
+    system: "You are Nexus, the AI receptionist for Align Chiropractic Care. Help callers book adjustments, ask about back pain, neck pain, sports injuries, or auto accident recovery. Mention the new patient special. Hours: Mon-Sat 8am-6pm. Walk-ins welcome but appointments preferred."
+  },
+  'optometry': {
+    name: 'ClearView Eye Care',
+    instructions: "Full eye exams, contact fittings, and a wide frame selection. Most vision insurance accepted.",
+    system: "You are Nexus, the AI receptionist for ClearView Eye Care. Help callers schedule comprehensive eye exams, contact lens fittings, or frame consultations. Answer questions about vision insurance, frame brands, contact brands, and LASIK referrals. Professional and friendly. Hours: Mon-Fri 9am-6pm, Sat 9am-3pm."
+  },
+
+  // ── LEGAL & FINANCE ──
+  'law': {
+    name: 'Sterling & Associates Law',
+    instructions: "Free 30-min initial consultations. Personal injury, family law, and estate planning.",
+    system: "You are Nexus, the AI receptionist for Sterling & Associates Law Firm. Help callers schedule free consultations, learn about practice areas (personal injury, family law, estate planning, business law). Professional, empathetic, never give specific legal advice. Always offer to connect urgent matters with an on-call attorney."
+  },
+  'accounting': {
+    name: 'Meridian Accounting Group',
+    instructions: "Tax preparation, bookkeeping, and business advisory services. Free initial consultation.",
+    system: "You are Nexus, the AI receptionist for Meridian Accounting Group. Help callers schedule tax prep appointments, bookkeeping consultations, or business advisory meetings. Answer questions about services (individual taxes, business taxes, QuickBooks setup, payroll). Professional and knowledgeable but never give specific tax advice. Tax season hours: Mon-Sat. Off-season: Mon-Fri."
+  },
+  'insurance': {
+    name: 'Apex Insurance Agency',
+    instructions: "Auto, home, life, and commercial insurance. Free quotes in 10 minutes.",
+    system: "You are Nexus, the AI receptionist for Apex Insurance Agency. Help callers get free quotes for auto, home, life, and commercial insurance, connect with licensed agents, understand coverage options, file claims, or make policy changes. Be reassuring and efficient. Emphasize free quotes and fast turnaround. Licensed in all 50 states."
+  },
+  'financial': {
+    name: 'Pinnacle Financial Advisors',
+    instructions: "Retirement planning, wealth management, and investment strategy. Complimentary portfolio review.",
+    system: "You are Nexus, the AI receptionist for Pinnacle Financial Advisors. Help callers schedule complimentary portfolio reviews or introductory consultations about retirement planning, wealth management, or investment strategy. Be professional and reassuring. Never give specific investment advice. Emphasize the free initial review. SEC-registered firm."
+  },
+
+  // ── HOME & AUTO ──
+  'real-estate': {
+    name: 'Coastal Realty Group',
+    instructions: "South Florida residential sales and rentals. Free home valuations available.",
+    system: "You are Nexus, the AI receptionist for Coastal Realty Group in South Florida. Help callers connect with agents, schedule property showings, request free home valuations, or learn about buying/selling/renting. Qualify leads by asking about budget, timeline, and property type. Route hot leads immediately to agents."
+  },
+  'auto': {
+    name: 'Precision Auto & Tire',
+    instructions: "Oil changes, brakes, tires, and full mechanical service. Free estimates on all work.",
+    system: "You are Nexus, the AI receptionist for Precision Auto & Tire. Help callers schedule service appointments, get estimates, ask about tire pricing, and understand services like oil changes, brake jobs, and inspections. Helpful and direct. Free estimates always. Loaner vehicles available for major repairs."
+  },
+  'hvac': {
+    name: 'AirPro HVAC Services',
+    instructions: "AC repair, installation, and maintenance. 24/7 emergency service available.",
+    system: "You are Nexus, the AI receptionist for AirPro HVAC Services. Help callers schedule AC repair, installation, tune-ups, or emergency service. Ask about the issue (no cooling, strange noise, high bills), unit age, and property type. 24/7 emergency service available. Financing options for new systems. Licensed and insured."
+  },
+  'plumbing': {
+    name: 'FlowRight Plumbing',
+    instructions: "Emergency plumbing available 24/7. Drain cleaning, water heaters, leak repair, and remodels.",
+    system: "You are Nexus, the AI receptionist for FlowRight Plumbing. Help callers schedule plumbing services or emergency dispatch. Ask about the issue (leak, clog, no hot water, low pressure) and location. 24/7 emergency service. Upfront pricing, no hidden fees. Licensed master plumbers. Serve residential and commercial."
+  },
+  'cleaning': {
+    name: 'SparkClean Home Services',
+    instructions: "Residential and commercial cleaning. One-time, weekly, biweekly, and move-in/out cleans.",
+    system: "You are Nexus, the AI receptionist for SparkClean Home Services. Help callers schedule cleaning services, get quotes, and understand service options (standard, deep clean, move-in/out, commercial). Ask about property size and frequency preference to provide an accurate quote. Eco-friendly products available. Insured and bonded team."
+  },
+
+  // ── BEAUTY & WELLNESS ──
+  'spa': {
+    name: 'Serenity Day Spa',
+    instructions: "Massages, facials, body wraps, and nail services. First-time guests get 20% off.",
+    system: "You are Nexus, the AI receptionist for Serenity Day Spa. Help callers book massages, facials, body treatments, and nail services. Mention the 20% first-time discount. Warm, calming, personable. Hours: Tue-Sun 9am-8pm. Gift cards available. Couples packages on weekends."
+  },
+  'fitness': {
+    name: 'Peak Performance Gym',
+    instructions: "No-contract memberships. Personal training, group classes, and nutrition coaching available.",
+    system: "You are Nexus, the AI receptionist for Peak Performance Gym. Help callers inquire about membership options (monthly, annual, no-contract), schedule free tours or personal training consultations, and learn about group fitness classes (yoga, HIIT, spin, CrossFit). Energetic and motivating tone. Free guest pass for first visit. Open 5am-11pm daily."
+  },
+  'vet': {
+    name: 'Paws & Claws Animal Hospital',
+    instructions: "Wellness exams, vaccinations, surgery, and dental care. Same-day sick visits available.",
+    system: "You are Nexus, the AI receptionist for Paws & Claws Animal Hospital. Help callers schedule wellness exams, vaccinations, sick visits, surgeries, or dental cleanings for their pets. Warm, compassionate, and pet-friendly tone. For after-hours emergencies, provide the nearest 24-hour emergency vet. Same-day sick visits available. Dogs, cats, and exotic pets welcome."
+  },
+
+  // ── HOSPITALITY & RETAIL ──
+  'restaurant': {
+    name: 'Casa Verde Restaurant',
+    instructions: "Farm-to-table dining. Reservations recommended. Private dining and catering available.",
+    system: "You are Nexus, the AI receptionist for Casa Verde Restaurant. Help callers make reservations, ask about the menu, inquire about private dining or event catering, and learn about hours and location. Warm, welcoming, and food-enthusiastic. Hours: Tue-Sun 5pm-10pm. Brunch Sat-Sun 10am-2pm. Reservations strongly recommended for weekends. Vegan and gluten-free options available."
+  },
+  'hotel': {
+    name: 'The Harbor Inn & Suites',
+    instructions: "Boutique waterfront hotel. Free breakfast included. Pet-friendly rooms available.",
+    system: "You are Nexus, the AI receptionist for The Harbor Inn & Suites, a boutique waterfront hotel. Help callers check availability, make reservations, ask about room types and amenities, learn about pet-friendly policies, and inquire about local attractions. Warm, hospitable tone. Free breakfast for all guests. Check-in 3pm, check-out 11pm. Complimentary parking."
+  },
+  'ecommerce': {
+    name: 'ShopNova Online Store',
+    instructions: "Free shipping on orders over $50. 30-day easy returns. Live chat and phone support.",
+    system: "You are Nexus, the AI receptionist for ShopNova Online Store. Help callers track orders, process returns, ask about products, and resolve issues. Efficient, friendly, and solution-oriented. Free shipping on orders $50+. 30-day return window. Order tracking available via order number. For complex issues, escalate to a human agent via ticket. Support hours: Mon-Fri 8am-8pm, Sat 9am-5pm."
+  }
+};
+
+// ── FILTER BIZ TYPES ──
+function filterBizTypes(query) {
+  const q = query.toLowerCase().trim();
+  const chips = document.querySelectorAll('#bizChipsScroll .chip');
+  const labels = document.querySelectorAll('#bizChipsScroll .biz-category-label');
+  const noResults = document.getElementById('noResults');
+  let anyVisible = false;
+
+  chips.forEach(chip => {
+    const label = chip.getAttribute('data-label') || '';
+    const key = chip.getAttribute('data-key') || '';
+    const visible = !q || label.toLowerCase().includes(q) || key.toLowerCase().includes(q);
+    chip.classList.toggle('hidden', !visible);
+    if (visible) anyVisible = true;
+  });
+
+  // Show/hide category labels based on siblings
+  labels.forEach(label => {
+    const nextSiblings = [];
+    let el = label.nextElementSibling;
+    while (el && !el.classList.contains('biz-category-label') && !el.classList.contains('no-results')) {
+      if (el.classList.contains('business-chips')) {
+        nextSiblings.push(el);
+      }
+      el = el.nextElementSibling;
+    }
+    const hasVisible = nextSiblings.some(group => [...group.querySelectorAll('.chip')].some(c => !c.classList.contains('hidden')));
+    label.style.display = hasVisible ? '' : 'none';
+    nextSiblings.forEach(g => g.style.display = hasVisible ? '' : 'none');
+  });
+
+  noResults.style.display = anyVisible ? 'none' : 'block';
+}
+
+let currentBiz = 'dental';
+let conversationHistory = [];
+let isWaiting = false;
+
+// ── INIT CHAT ──
+function initChat() {
+  const config = bizConfigs[currentBiz];
+  const bizName = document.getElementById('bizName').value || config.name;
+  const welcomeText = `Hi there! You've reached ${bizName}. I'm Nexus, your AI receptionist. How can I help you today?`;
+  
+  const welcomeEl = document.getElementById('welcomeMsg');
+  if (welcomeEl) {
+    welcomeEl.textContent = welcomeText;
+    conversationHistory = [{ role: 'assistant', content: welcomeText }];
+  }
+}
+
+// ── SET BIZ TYPE ──
+function setBiz(el, type) {
+  document.querySelectorAll('#bizChipsScroll .chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  currentBiz = type;
+  
+  const config = bizConfigs[type];
+  document.getElementById('bizName').value = config.name;
+  document.getElementById('bizInstructions').value = config.instructions;
+  
+  // Reset chat
+  const chatWindow = document.getElementById('chatWindow');
+  chatWindow.innerHTML = `
+    <div class="msg msg-system">Connected to Nexus AI · Session encrypted</div>
+    <div class="msg msg-ai" id="welcomeMsg"></div>
+    <div class="typing-indicator" id="typingIndicator">
+      <div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>
+    </div>
+  `;
+  conversationHistory = [];
+  initChat();
+}
+
+// ── SEND MESSAGE ──
+async function sendMessage() {
+  if (isWaiting) return;
+  
+  const input = document.getElementById('chatInput');
+  const text = input.value.trim();
+  if (!text) return;
+  
+  input.value = '';
+  isWaiting = true;
+  document.getElementById('sendBtn').disabled = true;
+
+  // Add user message
+  addMessage(text, 'user');
+  conversationHistory.push({ role: 'user', content: text });
+
+  // Show typing
+  const typing = document.getElementById('typingIndicator');
+  typing.classList.add('show');
+  scrollChat();
+
+  try {
+    const config = bizConfigs[currentBiz];
+    const bizName = document.getElementById('bizName').value || config.name;
+    const instructions = document.getElementById('bizInstructions').value || config.instructions;
+
+    const systemPrompt = `${config.system}
+
+Business name override: ${bizName}
+Special instructions: ${instructions}
+
+GUIDELINES:
+- Keep responses concise (2-4 sentences max) for a phone-call feel
+- Be warm, helpful, and professional
+- If asked to book an appointment, suggest 2-3 time slots (make them up realistically)
+- Collect necessary info naturally (name, contact, service needed)
+- For urgent matters, offer immediate escalation
+- Never make up specific medical, legal, or financial advice
+- End responses with a clear next step or question`;
+
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 1000,
+        system: systemPrompt,
+        messages: conversationHistory
+      })
+    });
+
+    const data = await response.json();
+    const reply = data.content?.[0]?.text || "I'm sorry, I didn't catch that. Could you repeat?";
+
+    typing.classList.remove('show');
+    addMessage(reply, 'ai');
+    conversationHistory.push({ role: 'assistant', content: reply });
+
+  } catch (err) {
+    typing.classList.remove('show');
+    addMessage("I'm having a brief connection issue. Please try again in a moment.", 'ai');
+  }
+
+  isWaiting = false;
+  document.getElementById('sendBtn').disabled = false;
+  document.getElementById('chatInput').focus();
+}
+
+function addMessage(text, type) {
+  const chatWindow = document.getElementById('chatWindow');
+  const typing = document.getElementById('typingIndicator');
+  
+  const msg = document.createElement('div');
+  msg.className = `msg msg-${type}`;
+  msg.textContent = text;
+  
+  chatWindow.insertBefore(msg, typing);
+  scrollChat();
+}
+
+function scrollChat() {
+  const chatWindow = document.getElementById('chatWindow');
+  chatWindow.scrollTop = chatWindow.scrollHeight;
+}
+
+// Enter key
+document.addEventListener('DOMContentLoaded', () => {
+  initChat();
+  
+  document.getElementById('chatInput').addEventListener('keydown', e => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
+    }
+  });
+});
+
+// ── MODAL ──
+function openModal() {
+  document.getElementById('modalOverlay').classList.add('open');
+}
+function closeModal() {
+  document.getElementById('modalOverlay').classList.remove('open');
+}
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeModal();
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,993 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Apex AI — Your AI Sales Rep</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;500;700&display=swap');
+
+:root {
+  --void:   #0A0A0F;
+  --deep:   #0F0F1A;
+  --surface:#16162A;
+  --card:   #1C1C33;
+  --rim:    #2A2A4A;
+  --violet: #7C3AED;
+  --violet-dim: rgba(124,58,237,0.12);
+  --violet-glow: rgba(124,58,237,0.45);
+  --coral:  #FF4F64;
+  --coral-dim: rgba(255,79,100,0.12);
+  --gold:   #F59E0B;
+  --gold-dim: rgba(245,158,11,0.12);
+  --mint:   #10B981;
+  --mint-dim: rgba(16,185,129,0.12);
+  --snow:   #F8FAFC;
+  --mist:   #6B7280;
+  --soft:   #9CA3AF;
+  --display:'Syne', sans-serif;
+  --body:   'DM Sans', sans-serif;
+  --mono:   'JetBrains Mono', monospace;
+}
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;overflow-x:hidden;max-width:100%;}
+body{background:var(--void);color:var(--snow);font-family:var(--body);line-height:1.6;overflow-x:hidden;max-width:100%;}
+
+/* noise grain overlay */
+body::after{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");pointer-events:none;z-index:999;opacity:0.4;}
+
+/* ── NAV ── */
+nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:18px 56px;display:flex;align-items:center;justify-content:space-between;background:rgba(10,10,15,0.8);backdrop-filter:blur(20px);border-bottom:1px solid var(--rim);}
+.nav-logo{font-family:var(--display);font-size:1.2rem;font-weight:800;letter-spacing:0em;color:#FFFFFF;}
+.nav-logo em{color:#A78BFA;font-style:normal;}
+nav ul{list-style:none;display:flex;gap:36px;}
+nav ul a{color:#C4C9D4;text-decoration:none;font-size:0.875rem;font-weight:500;transition:color 0.2s;}
+nav ul a:hover{color:#FFFFFF;}
+.nav-pill{background:var(--violet);color:#fff;padding:9px 22px;border-radius:6px;font-weight:700!important;color:var(--snow)!important;transition:opacity 0.2s!important;}
+.nav-pill:hover{opacity:0.85;}
+
+/* ── HERO ── */
+.hero{padding:140px 56px 80px;position:relative;overflow:hidden;}
+.hero-glow{position:absolute;top:-200px;left:50%;transform:translateX(-50%);width:min(900px,100vw);height:600px;background:radial-gradient(ellipse at center,rgba(124,58,237,0.12) 0%,transparent 65%);pointer-events:none;}
+
+.hero-top{max-width:760px;margin:0 auto;text-align:center;position:relative;z-index:2;}
+.hero-badge{display:inline-flex;align-items:center;gap:8px;font-family:var(--mono);font-size:0.68rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--violet);background:var(--violet-dim);border:1px solid rgba(124,58,237,0.25);padding:6px 16px;border-radius:20px;margin-bottom:28px;}
+.hero-badge .dot{width:6px;height:6px;background:var(--coral);border-radius:50%;animation:pulse 1.8s ease-in-out infinite;}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:0.4;transform:scale(0.7);}}
+
+h1{font-family:var(--display);font-size:clamp(2.4rem,5vw,4.2rem);font-weight:800;line-height:1.12;letter-spacing:-0.01em;margin-bottom:22px;color:#FFFFFF;}
+h1 .v{color:#A78BFA;}
+h1 .c{color:#FF7087;}
+
+.hero-sub{font-size:1.15rem;color:#BCC4D4;max-width:580px;margin:0 auto 48px;line-height:1.75;}
+
+.hero-actions{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin-bottom:64px;}
+.btn-primary{background:var(--violet);color:#fff;border:none;padding:15px 34px;font-family:var(--body);font-size:0.95rem;font-weight:700;border-radius:8px;cursor:pointer;transition:box-shadow 0.2s,transform 0.15s;letter-spacing:-0.01em;}
+.btn-primary:hover{box-shadow:0 0 32px var(--violet-glow);transform:translateY(-2px);}
+.btn-outline{background:transparent;color:var(--snow);border:1px solid var(--rim);padding:15px 34px;font-family:var(--body);font-size:0.95rem;font-weight:600;border-radius:8px;cursor:pointer;transition:border-color 0.2s,color 0.2s;}
+.btn-outline:hover{border-color:var(--violet);color:var(--violet);}
+
+/* replaces row */
+.replaces-row{display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;margin-bottom:72px;}
+.replaces-label{font-family:var(--mono);font-size:0.68rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--mist);}
+.replaces-chip{display:inline-flex;align-items:center;gap:6px;font-size:0.8rem;font-weight:600;color:#C4C9D4;background:var(--card);border:1px solid var(--rim);padding:6px 14px;border-radius:20px;}
+.replaces-chip .x{color:#FF7087;font-weight:700;}
+
+/* ── PIPELINE SIMULATOR ── */
+.pipeline-section{padding:0 56px 100px;position:relative;z-index:2;overflow:hidden;}
+.pipeline-header{text-align:center;margin-bottom:40px;}
+.section-eyebrow{font-family:var(--mono);font-size:0.68rem;letter-spacing:0.14em;text-transform:uppercase;color:#A78BFA;margin-bottom:12px;}
+h2{font-family:var(--display);font-size:clamp(1.7rem,3vw,2.5rem);font-weight:800;letter-spacing:-0.01em;line-height:1.18;margin-bottom:12px;color:#FFFFFF;}
+.section-sub{font-size:1rem;color:#C4C9D4;max-width:500px;margin:0 auto;}
+
+.pipeline-board{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;background:var(--deep);border:1px solid var(--rim);border-radius:16px;padding:24px;overflow-x:auto;}
+
+.pipeline-col{}
+.pipeline-col-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;padding:0 2px;}
+.col-title{font-family:var(--mono);font-size:0.65rem;letter-spacing:0.12em;text-transform:uppercase;font-weight:700;}
+.col-count{font-family:var(--mono);font-size:0.65rem;background:var(--rim);color:var(--soft);padding:2px 8px;border-radius:10px;}
+
+.col-new .col-title{color:var(--soft);}
+.col-contacted .col-title{color:var(--violet);}
+.col-responded .col-title{color:var(--gold);}
+.col-qualified .col-title{color:var(--mint);}
+.col-booked .col-title{color:var(--coral);}
+
+.pipeline-cards{display:flex;flex-direction:column;gap:8px;min-height:300px;}
+
+.lead-card{background:var(--card);border:1px solid var(--rim);border-radius:10px;padding:12px 14px;cursor:pointer;transition:border-color 0.2s,transform 0.15s;position:relative;overflow:hidden;animation:cardIn 0.4s ease;}
+@keyframes cardIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+.lead-card:hover{border-color:var(--violet);transform:translateY(-1px);}
+.lead-card.new-card{border-left:3px solid var(--rim);}
+.lead-card.contacted-card{border-left:3px solid var(--violet);}
+.lead-card.responded-card{border-left:3px solid var(--gold);}
+.lead-card.qualified-card{border-left:3px solid var(--mint);}
+.lead-card.booked-card{border-left:3px solid var(--coral);}
+
+.card-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:6px;}
+.card-name{font-size:0.82rem;font-weight:700;color:var(--snow);}
+.card-time{font-family:var(--mono);font-size:0.6rem;color:var(--mist);}
+.card-biz{font-size:0.72rem;color:var(--soft);margin-bottom:6px;}
+.card-tag{display:inline-block;font-family:var(--mono);font-size:0.58rem;letter-spacing:0.08em;text-transform:uppercase;padding:2px 7px;border-radius:4px;font-weight:700;}
+.tag-new{background:rgba(107,114,128,0.2);color:var(--soft);}
+.tag-email{background:var(--violet-dim);color:var(--violet);}
+.tag-sms{background:var(--gold-dim);color:var(--gold);}
+.tag-call{background:var(--mint-dim);color:var(--mint);}
+.tag-booked{background:var(--coral-dim);color:var(--coral);}
+
+.card-ai-badge{position:absolute;top:10px;right:10px;width:16px;height:16px;border-radius:50%;background:var(--violet);display:flex;align-items:center;justify-content:center;font-size:0.5rem;font-weight:700;color:#fff;}
+
+.pipeline-controls{display:flex;align-items:center;justify-content:space-between;margin-top:20px;padding:0 4px;}
+.pipeline-stat{font-family:var(--mono);font-size:0.7rem;color:#BCC4D4;}
+.pipeline-stat strong{color:#FFFFFF;}
+.btn-sm{background:var(--violet);color:#fff;border:none;padding:8px 18px;border-radius:6px;font-family:var(--body);font-size:0.78rem;font-weight:700;cursor:pointer;transition:opacity 0.2s;}
+.btn-sm:hover{opacity:0.85;}
+
+/* ── AI COMPOSER ── */
+.composer-section{background:var(--deep);border-top:1px solid var(--rim);border-bottom:1px solid var(--rim);padding:100px 56px;overflow:hidden;}
+.composer-wrap{max-width:1100px;margin:0 auto;display:grid;grid-template-columns:1fr 1.4fr;gap:48px;align-items:start;}
+
+.composer-left{}
+.composer-controls{display:flex;flex-direction:column;gap:16px;margin-top:32px;}
+
+.control-group{}
+.control-label{font-family:var(--mono);font-size:0.65rem;letter-spacing:0.1em;text-transform:uppercase;color:#BCC4D4;margin-bottom:8px;display:block;}
+.control-select,.control-input{width:100%;background:var(--card);border:1px solid var(--rim);border-radius:8px;color:#FFFFFF;font-family:var(--body);font-size:0.875rem;padding:10px 14px;outline:none;transition:border-color 0.2s;}
+.control-select:focus,.control-input:focus{border-color:var(--violet);}
+.control-select option{background:var(--card);}
+
+.channel-tabs{display:flex;gap:6px;}
+.channel-tab{flex:1;padding:9px 8px;background:var(--card);border:1px solid var(--rim);border-radius:6px;color:var(--soft);font-size:0.78rem;font-weight:600;cursor:pointer;text-align:center;transition:all 0.15s;}
+.channel-tab.active{background:var(--violet-dim);border-color:var(--violet);color:var(--violet);}
+
+.sequence-steps{display:flex;flex-direction:column;gap:8px;margin-top:4px;}
+.seq-step{display:flex;align-items:center;gap:10px;padding:8px 12px;background:var(--card);border:1px solid var(--rim);border-radius:8px;font-size:0.78rem;cursor:pointer;transition:border-color 0.15s;}
+.seq-step:hover{border-color:var(--violet);}
+.seq-step.active-step{border-color:var(--violet);background:var(--violet-dim);}
+.seq-icon{font-size:0.9rem;flex-shrink:0;}
+.seq-info{flex:1;}
+.seq-title{font-weight:600;color:#FFFFFF;font-size:0.78rem;}
+.seq-delay{font-family:var(--mono);font-size:0.6rem;color:#BCC4D4;}
+.seq-status{font-family:var(--mono);font-size:0.6rem;padding:2px 6px;border-radius:4px;}
+.status-queued{background:var(--violet-dim);color:var(--violet);}
+.status-sent{background:var(--mint-dim);color:var(--mint);}
+.status-pending{background:var(--gold-dim);color:var(--gold);}
+
+.generate-btn{width:100%;background:linear-gradient(135deg,var(--violet),#9333EA);color:#fff;border:none;border-radius:8px;padding:13px;font-family:var(--body);font-size:0.9rem;font-weight:700;cursor:pointer;transition:opacity 0.2s,transform 0.15s;display:flex;align-items:center;justify-content:center;gap:8px;margin-top:4px;}
+.generate-btn:hover{opacity:0.9;transform:translateY(-1px);}
+.generate-btn:disabled{opacity:0.5;cursor:not-allowed;transform:none;}
+
+/* OUTPUT PANEL */
+.composer-right{}
+.output-panel{background:var(--void);border:1px solid var(--rim);border-radius:12px;overflow:hidden;height:100%;}
+.output-header{background:var(--surface);padding:14px 20px;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--rim);}
+.out-dot{width:10px;height:10px;border-radius:50%;}
+.out-dot-r{background:#FF5F57;}
+.out-dot-y{background:#FFBD2E;}
+.out-dot-g{background:#28C840;}
+.out-title{font-family:var(--mono);font-size:0.72rem;color:#C4C9D4;margin-left:4px;font-weight:700;}
+.out-channel-badge{margin-left:auto;font-family:var(--mono);font-size:0.6rem;padding:3px 10px;border-radius:20px;font-weight:700;}
+.badge-email{background:var(--violet-dim);color:var(--violet);border:1px solid rgba(124,58,237,0.3);}
+.badge-sms{background:var(--gold-dim);color:var(--gold);border:1px solid rgba(245,158,11,0.3);}
+.badge-call{background:var(--mint-dim);color:var(--mint);border:1px solid rgba(16,185,129,0.3);}
+
+.output-body{padding:24px;min-height:360px;}
+.placeholder-state{display:flex;flex-direction:column;align-items:center;justify-content:center;height:300px;gap:12px;opacity:0.5;}
+.placeholder-state .icon{font-size:2.5rem;}
+.placeholder-state p{font-size:0.85rem;color:#BCC4D4;text-align:center;}
+
+.message-preview{display:none;}
+.msg-meta{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--rim);}
+.msg-from{font-family:var(--mono);font-size:0.68rem;color:#BCC4D4;}
+.msg-from strong{color:#FFFFFF;}
+.msg-score{display:flex;align-items:center;gap:6px;font-family:var(--mono);font-size:0.62rem;color:#34D399;}
+.msg-score .bar{width:60px;height:4px;background:var(--rim);border-radius:2px;overflow:hidden;}
+.msg-score .fill{height:100%;background:#34D399;border-radius:2px;transition:width 0.8s ease;}
+
+.msg-subject{font-size:0.8rem;font-weight:700;color:#BCC4D4;margin-bottom:6px;font-family:var(--mono);}
+.msg-subject span{color:#FFFFFF;}
+.msg-body{font-size:0.875rem;color:#C4C9D4;line-height:1.75;white-space:pre-wrap;}
+.msg-body strong{color:#FFFFFF;}
+
+.typing-wrap{display:none;align-items:center;gap:10px;padding:20px 0;}
+.typing-wrap.show{display:flex;}
+.t-dot{width:8px;height:8px;background:var(--violet);border-radius:50%;animation:tdot 1.2s ease-in-out infinite;}
+.t-dot:nth-child(2){animation-delay:0.2s;}
+.t-dot:nth-child(3){animation-delay:0.4s;}
+@keyframes tdot{0%,80%,100%{transform:scale(0.5);opacity:0.3;}40%{transform:scale(1);opacity:1;}}
+.typing-label{font-family:var(--mono);font-size:0.72rem;color:var(--violet);}
+
+.output-actions{padding:0 24px 20px;display:flex;gap:8px;}
+.action-btn{flex:1;background:var(--card);border:1px solid var(--rim);color:var(--soft);padding:8px;font-family:var(--body);font-size:0.78rem;font-weight:600;border-radius:6px;cursor:pointer;transition:border-color 0.2s,color 0.2s;}
+.action-btn:hover{border-color:var(--violet);color:var(--violet);}
+
+/* ── FEATURES ── */
+.features-section{padding:100px 56px;overflow:hidden;}
+.features-header{text-align:center;margin-bottom:64px;}
+.features-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--rim);border:1px solid var(--rim);border-radius:12px;overflow:hidden;max-width:1100px;margin:0 auto;}
+.feat-card{background:var(--deep);padding:36px 32px;transition:background 0.2s;position:relative;}
+.feat-card:hover{background:var(--surface);}
+.feat-icon{font-size:1.6rem;margin-bottom:18px;}
+.feat-title{font-family:var(--display);font-size:1.05rem;font-weight:700;margin-bottom:10px;color:#FFFFFF;letter-spacing:0em;}
+.feat-desc{font-size:0.875rem;color:#BCC4D4;line-height:1.65;}
+.feat-stat{display:inline-block;font-family:var(--mono);font-size:0.68rem;color:var(--violet);background:var(--violet-dim);border:1px solid rgba(124,58,237,0.2);padding:3px 10px;border-radius:4px;margin-top:14px;font-weight:700;}
+
+/* ── TIMELINE ── */
+.timeline-section{background:var(--deep);border-top:1px solid var(--rim);border-bottom:1px solid var(--rim);padding:100px 56px;overflow:hidden;}
+.timeline-wrap{max-width:900px;margin:0 auto;}
+.timeline-header{text-align:center;margin-bottom:60px;}
+
+.sequence-timeline{position:relative;}
+.sequence-timeline::before{content:'';position:absolute;left:28px;top:0;bottom:0;width:1px;background:linear-gradient(to bottom,var(--violet),transparent);}
+
+.tl-item{display:flex;gap:24px;margin-bottom:32px;position:relative;}
+.tl-node{width:56px;height:56px;border-radius:50%;border:2px solid var(--rim);background:var(--surface);display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0;z-index:1;position:relative;transition:border-color 0.2s;}
+.tl-item:hover .tl-node{border-color:var(--violet);}
+.tl-node.active-node{border-color:var(--violet);background:var(--violet-dim);box-shadow:0 0 20px var(--violet-glow);}
+.tl-content{flex:1;padding-top:12px;}
+.tl-delay{font-family:var(--mono);font-size:0.62rem;letter-spacing:0.1em;text-transform:uppercase;color:#A78BFA;margin-bottom:6px;}
+.tl-title{font-family:var(--display);font-size:1rem;font-weight:700;margin-bottom:6px;color:#FFFFFF;letter-spacing:0em;}
+.tl-desc{font-size:0.875rem;color:#BCC4D4;line-height:1.6;margin-bottom:8px;}
+.tl-channels{display:flex;gap:6px;flex-wrap:wrap;}
+.tl-chip{font-family:var(--mono);font-size:0.62rem;padding:3px 8px;border-radius:4px;font-weight:700;}
+.chip-email{background:var(--violet-dim);color:var(--violet);}
+.chip-sms{background:var(--gold-dim);color:var(--gold);}
+.chip-call{background:var(--mint-dim);color:var(--mint);}
+.chip-vm{background:var(--coral-dim);color:var(--coral);}
+
+/* ── VS TABLE ── */
+.vs-section{padding:100px 56px;overflow:hidden;}
+.vs-wrap{max-width:900px;margin:0 auto;}
+.vs-header{text-align:center;margin-bottom:48px;}
+.vs-table{width:100%;border-collapse:collapse;background:var(--deep);border:1px solid var(--rim);border-radius:12px;overflow:hidden;}
+.vs-table th{padding:16px 24px;font-family:var(--mono);font-size:0.72rem;letter-spacing:0.08em;text-transform:uppercase;text-align:left;border-bottom:1px solid var(--rim);}
+.vs-table th:first-child{color:#C4C9D4;}
+.vs-table th.human-col{color:#FF7087;}
+.vs-table th.ai-col{color:#A78BFA;}
+.vs-table td{padding:14px 24px;font-size:0.88rem;border-bottom:1px solid var(--rim);vertical-align:middle;}
+.vs-table tr:last-child td{border-bottom:none;}
+.vs-table tr:hover td{background:var(--surface);}
+.vs-table td:first-child{color:#D1D5DB;font-weight:500;}
+.check{color:#34D399;font-weight:700;}
+.cross{color:#FF7087;font-weight:700;font-size:1.1rem;}
+.vs-table td.ai-val{color:#FFFFFF;font-weight:600;}
+.vs-table td.human-val{color:#9CA3AF;}
+.vs-winner{text-align:center;margin-top:24px;font-size:0.85rem;color:#BCC4D4;}
+.vs-winner strong{color:#A78BFA;}
+
+/* ── PRICING ── */
+.pricing-section{background:var(--deep);border-top:1px solid var(--rim);padding:100px 56px;overflow:hidden;}
+.pricing-header{text-align:center;margin-bottom:56px;}
+.pricing-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;max-width:1000px;margin:0 auto;}
+.price-card{background:var(--void);border:1px solid var(--rim);border-radius:14px;padding:40px 32px;position:relative;transition:transform 0.2s,border-color 0.2s;}
+.price-card:hover{transform:translateY(-4px);}
+.price-card.featured{border-color:var(--violet);background:linear-gradient(180deg,rgba(124,58,237,0.06) 0%,var(--void) 60%);}
+.featured-tag{position:absolute;top:-13px;left:50%;transform:translateX(-50%);background:var(--violet);color:#fff;font-family:var(--mono);font-size:0.62rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;padding:4px 14px;border-radius:20px;white-space:nowrap;}
+.plan-tier{font-family:var(--mono);font-size:0.68rem;letter-spacing:0.12em;text-transform:uppercase;color:#BCC4D4;margin-bottom:10px;}
+.plan-price{font-family:var(--display);font-size:3rem;font-weight:800;letter-spacing:-0.01em;line-height:1;margin-bottom:4px;color:#FFFFFF;}
+.plan-price sub{font-size:1rem;font-weight:400;color:#9CA3AF;font-family:var(--body);}
+.plan-tagline{font-size:0.85rem;color:#BCC4D4;margin-bottom:24px;padding-bottom:24px;border-bottom:1px solid var(--rim);}
+.plan-features{list-style:none;margin-bottom:32px;display:flex;flex-direction:column;gap:10px;}
+.plan-features li{font-size:0.875rem;color:#C4C9D4;display:flex;align-items:flex-start;gap:10px;}
+.plan-features li::before{content:'✓';color:#A78BFA;font-weight:800;flex-shrink:0;}
+
+/* ── CTA ── */
+.cta-section{padding:120px 56px;text-align:center;position:relative;overflow:hidden;}
+.cta-glow{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:min(700px,100vw);height:500px;background:radial-gradient(ellipse,rgba(124,58,237,0.1) 0%,transparent 70%);pointer-events:none;}
+.cta-section h2{max-width:600px;margin:0 auto 20px;}
+.cta-section .section-sub{margin:0 auto 48px;}
+
+/* ── FOOTER ── */
+footer{background:var(--deep);border-top:1px solid var(--rim);padding:48px 56px;display:flex;align-items:center;justify-content:space-between;}
+.footer-logo{font-family:var(--display);font-size:1rem;font-weight:800;color:#FFFFFF;}
+.footer-logo em{color:#A78BFA;font-style:normal;}
+.footer-links{display:flex;gap:28px;}
+.footer-links a{font-size:0.8rem;color:#BCC4D4;text-decoration:none;transition:color 0.2s;}
+.footer-links a:hover{color:#A78BFA;}
+.footer-copy{font-family:var(--mono);font-size:0.72rem;color:#9CA3AF;}
+
+/* ── RESPONSIVE ── */
+@media(max-width:960px){
+  nav{padding:16px 24px;}
+  nav ul{display:none;}
+  .hero{padding:120px 24px 60px;}
+  .pipeline-section{padding:0 16px 80px;overflow:hidden;}
+  .pipeline-board{grid-template-columns:repeat(2,1fr);overflow-x:auto;-webkit-overflow-scrolling:touch;}
+  .pipeline-controls{flex-direction:column;align-items:flex-start;gap:12px;}
+  .composer-section{padding:80px 24px;}
+  .composer-wrap{grid-template-columns:1fr;}
+  .features-section,.vs-section,.pricing-section,.cta-section{padding:80px 24px;}
+  .timeline-section{padding:80px 24px;overflow:hidden;}
+  .sequence-timeline::before{display:none;}
+  .features-grid{grid-template-columns:1fr;}
+  .pricing-grid{grid-template-columns:1fr;}
+  footer{flex-direction:column;gap:20px;text-align:center;padding:40px 24px;}
+  .footer-links{flex-wrap:wrap;justify-content:center;}
+  .vs-table{display:block;overflow-x:auto;-webkit-overflow-scrolling:touch;}
+  .replaces-row{gap:8px;}
+  .hero-actions{flex-direction:column;align-items:center;}
+  .btn-primary,.btn-outline{width:100%;max-width:340px;text-align:center;}
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">Apex<em>AI</em></div>
+  <ul>
+    <li><a href="#pipeline">Pipeline</a></li>
+    <li><a href="#composer">Composer</a></li>
+    <li><a href="#sequence">Sequence</a></li>
+    <li><a href="#pricing">Pricing</a></li>
+    <li><a href="#" class="nav-pill">Get Started</a></li>
+  </ul>
+</nav>
+
+<!-- ══ HERO ══ -->
+<section class="hero">
+  <div class="hero-glow"></div>
+  <div class="hero-top">
+    <div class="hero-badge"><span class="dot"></span> AI Sales Rep — Always On</div>
+    <h1>Your leads aren't<br>cold. Your <span class="v">follow-up</span><br>is <span class="c">broken.</span></h1>
+    <p class="hero-sub">Apex AI follows up on every lead automatically — emails, texts, calls — until they book or opt out. No lead goes cold. No rep needed.</p>
+
+    <div class="hero-actions">
+      <button class="btn-primary" onclick="document.getElementById('composer').scrollIntoView({behavior:'smooth'})">Watch It Write a Follow-Up →</button>
+      <button class="btn-outline" onclick="document.getElementById('pipeline').scrollIntoView({behavior:'smooth'})">See the Live Pipeline</button>
+    </div>
+
+    <div class="replaces-row">
+      <span class="replaces-label">Replaces</span>
+      <span class="replaces-chip"><span class="x">✕</span> Inside Sales Rep</span>
+      <span class="replaces-chip"><span class="x">✕</span> Lead Nurture Team</span>
+      <span class="replaces-chip"><span class="x">✕</span> Follow-Up Coordinator</span>
+    </div>
+  </div>
+</section>
+
+<!-- ══ PIPELINE SIMULATOR ══ -->
+<section class="pipeline-section" id="pipeline">
+  <div class="pipeline-header">
+    <div class="section-eyebrow">Live Pipeline</div>
+    <h2>Watch leads move<br>through your funnel — automatically.</h2>
+    <p class="section-sub">Every new lead triggers an instant follow-up sequence. Apex handles the entire journey.</p>
+  </div>
+
+  <div class="pipeline-board" id="pipelineBoard">
+    <div class="pipeline-col col-new">
+      <div class="pipeline-col-header">
+        <span class="col-title col-new">New Leads</span>
+        <span class="col-count" id="count-new">4</span>
+      </div>
+      <div class="pipeline-cards" id="cards-new"></div>
+    </div>
+    <div class="pipeline-col col-contacted">
+      <div class="pipeline-col-header">
+        <span class="col-title col-contacted">Contacted</span>
+        <span class="col-count" id="count-contacted">3</span>
+      </div>
+      <div class="pipeline-cards" id="cards-contacted"></div>
+    </div>
+    <div class="pipeline-col col-responded">
+      <div class="pipeline-col-header">
+        <span class="col-title col-responded">Responded</span>
+        <span class="col-count" id="count-responded">2</span>
+      </div>
+      <div class="pipeline-cards" id="cards-responded"></div>
+    </div>
+    <div class="pipeline-col col-qualified">
+      <div class="pipeline-col-header">
+        <span class="col-title col-qualified">Qualified</span>
+        <span class="col-count" id="count-qualified">2</span>
+      </div>
+      <div class="pipeline-cards" id="cards-qualified"></div>
+    </div>
+    <div class="pipeline-col col-booked">
+      <div class="pipeline-col-header">
+        <span class="col-title col-booked">Booked 🔥</span>
+        <span class="col-count" id="count-booked">1</span>
+      </div>
+      <div class="pipeline-cards" id="cards-booked"></div>
+    </div>
+  </div>
+
+  <div class="pipeline-controls">
+    <div class="pipeline-stat">Conversion rate: <strong id="convRate">8%</strong> &nbsp;·&nbsp; Avg response time: <strong>4 min</strong> &nbsp;·&nbsp; Leads this month: <strong id="totalLeads">12</strong></div>
+    <button class="btn-sm" onclick="addNewLead()">+ Inject New Lead</button>
+  </div>
+</section>
+
+<!-- ══ AI COMPOSER ══ -->
+<section class="composer-section" id="composer">
+  <div style="text-align:center;margin-bottom:56px;">
+    <div class="section-eyebrow">AI Message Composer</div>
+    <h2>Every message personalized.<br>Every channel covered.</h2>
+    <p class="section-sub" style="margin:0 auto;">Pick a lead type and follow-up step — watch Apex write the perfect message in real time.</p>
+  </div>
+
+  <div class="composer-wrap">
+    <!-- LEFT: CONTROLS -->
+    <div class="composer-left">
+      <div class="composer-controls">
+        <div class="control-group">
+          <label class="control-label">Lead Type / Industry</label>
+          <select class="control-select" id="leadType">
+            <option value="dental">Dental Practice — Missed Call Lead</option>
+            <option value="law">Law Firm — Website Contact Form</option>
+            <option value="hvac">HVAC — Emergency Service Request</option>
+            <option value="realestate">Real Estate — Home Valuation Request</option>
+            <option value="gym">Fitness Studio — Free Trial Sign-up</option>
+            <option value="ecomm">eCommerce — Abandoned Cart ($189)</option>
+            <option value="saas">SaaS — Free Trial, Day 3 No Login</option>
+            <option value="roofing">Roofing — Storm Damage Quote Request</option>
+          </select>
+        </div>
+
+        <div class="control-group">
+          <label class="control-label">Follow-Up Channel</label>
+          <div class="channel-tabs">
+            <div class="channel-tab active" onclick="setChannel(this,'email')">📧 Email</div>
+            <div class="channel-tab" onclick="setChannel(this,'sms')">💬 SMS</div>
+            <div class="channel-tab" onclick="setChannel(this,'voicemail')">📞 Voicemail</div>
+          </div>
+        </div>
+
+        <div class="control-group">
+          <label class="control-label">Sequence Step</label>
+          <div class="sequence-steps" id="seqSteps">
+            <div class="seq-step active-step" onclick="setStep(this,1)">
+              <span class="seq-icon">⚡</span>
+              <div class="seq-info"><div class="seq-title">Immediate (0–5 min)</div><div class="seq-delay">First touch while lead is hot</div></div>
+              <span class="seq-status status-queued">NEXT</span>
+            </div>
+            <div class="seq-step" onclick="setStep(this,2)">
+              <span class="seq-icon">🔁</span>
+              <div class="seq-info"><div class="seq-title">Follow-Up 1 (Day 1)</div><div class="seq-delay">24 hours after no reply</div></div>
+              <span class="seq-status status-pending">PENDING</span>
+            </div>
+            <div class="seq-step" onclick="setStep(this,3)">
+              <span class="seq-icon">🎯</span>
+              <div class="seq-info"><div class="seq-title">Follow-Up 2 (Day 3)</div><div class="seq-delay">Value-add + social proof</div></div>
+              <span class="seq-status status-pending">PENDING</span>
+            </div>
+            <div class="seq-step" onclick="setStep(this,4)">
+              <span class="seq-icon">🚪</span>
+              <div class="seq-info"><div class="seq-title">Break-Up (Day 7)</div><div class="seq-delay">Last attempt — permission close</div></div>
+              <span class="seq-status status-pending">PENDING</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="control-group">
+          <label class="control-label">Lead Name (optional)</label>
+          <input type="text" class="control-input" id="leadName" placeholder="e.g. Sarah Mitchell" />
+        </div>
+
+        <button class="generate-btn" id="generateBtn" onclick="generateMessage()">
+          <span>⚡</span> Generate Follow-Up Message
+        </button>
+      </div>
+    </div>
+
+    <!-- RIGHT: OUTPUT -->
+    <div class="composer-right">
+      <div class="output-panel">
+        <div class="output-header">
+          <div class="out-dot out-dot-r"></div>
+          <div class="out-dot out-dot-y"></div>
+          <div class="out-dot out-dot-g"></div>
+          <span class="out-title">Message Preview</span>
+          <span class="out-channel-badge badge-email" id="channelBadge">EMAIL</span>
+        </div>
+        <div class="output-body" id="outputBody">
+          <div class="placeholder-state" id="placeholderState">
+            <div class="icon">✍️</div>
+            <p>Configure your lead type, channel, and sequence step<br>then click Generate to see Apex write the message.</p>
+          </div>
+          <div class="typing-wrap" id="typingWrap">
+            <div class="t-dot"></div><div class="t-dot"></div><div class="t-dot"></div>
+            <span class="typing-label">Apex is writing...</span>
+          </div>
+          <div class="message-preview" id="messagePreview">
+            <div class="msg-meta">
+              <div class="msg-from">From: <strong>Apex AI (on behalf of your business)</strong></div>
+              <div class="msg-score">
+                <span>Confidence</span>
+                <div class="bar"><div class="fill" id="scoreBar" style="width:0%"></div></div>
+                <span id="scoreVal">—</span>
+              </div>
+            </div>
+            <div class="msg-subject" id="msgSubject"></div>
+            <div class="msg-body" id="msgBody"></div>
+          </div>
+        </div>
+        <div class="output-actions" id="outputActions" style="display:none;">
+          <button class="action-btn">📋 Copy</button>
+          <button class="action-btn">✏️ Edit</button>
+          <button class="action-btn">📤 Send Now</button>
+          <button class="action-btn" onclick="generateMessage()">🔄 Regenerate</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ SEQUENCE TIMELINE ══ -->
+<section class="timeline-section" id="sequence">
+  <div class="timeline-wrap">
+    <div class="timeline-header">
+      <div class="section-eyebrow">Follow-Up Sequence</div>
+      <h2>7-day sequence.<br>Zero human effort.</h2>
+      <p class="section-sub" style="margin:0 auto;">Apex runs this entire sequence automatically — it stops the moment the lead books or replies.</p>
+    </div>
+
+    <div class="sequence-timeline">
+      <div class="tl-item">
+        <div class="tl-node active-node">⚡</div>
+        <div class="tl-content">
+          <div class="tl-delay">Immediately (0–5 minutes)</div>
+          <div class="tl-title">Instant First Touch</div>
+          <div class="tl-desc">The moment a lead comes in, Apex fires a personalized message referencing exactly how they found you — no generic templates. Speed-to-lead is everything: responding in under 5 minutes is 21× more effective than responding in 30.</div>
+          <div class="tl-channels"><span class="tl-chip chip-email">Email</span><span class="tl-chip chip-sms">SMS</span></div>
+        </div>
+      </div>
+
+      <div class="tl-item">
+        <div class="tl-node">🔁</div>
+        <div class="tl-content">
+          <div class="tl-delay">Day 1 — 24 hours later</div>
+          <div class="tl-title">Value-Forward Check-In</div>
+          <div class="tl-desc">Apex re-engages with a different angle — a relevant case study, a quick question about their situation, or a low-friction next step. Not "just following up." A reason to reply.</div>
+          <div class="tl-channels"><span class="tl-chip chip-email">Email</span><span class="tl-chip chip-sms">SMS</span></div>
+        </div>
+      </div>
+
+      <div class="tl-item">
+        <div class="tl-node">📞</div>
+        <div class="tl-content">
+          <div class="tl-delay">Day 2 — Phone + Voicemail Drop</div>
+          <div class="tl-title">Direct Outreach</div>
+          <div class="tl-desc">Apex initiates a call attempt with an AI voice and drops a personalized voicemail if there's no answer. Voicemail scripts are written to sound human and natural — not robotic.</div>
+          <div class="tl-channels"><span class="tl-chip chip-call">Call</span><span class="tl-chip chip-vm">Voicemail</span></div>
+        </div>
+      </div>
+
+      <div class="tl-item">
+        <div class="tl-node">🎯</div>
+        <div class="tl-content">
+          <div class="tl-delay">Day 3 — Social Proof + Urgency</div>
+          <div class="tl-title">Trust Builder</div>
+          <div class="tl-desc">A third touchpoint with a testimonial or proof point relevant to the lead's industry, plus a direct calendar link. Makes it easy to say yes with one click.</div>
+          <div class="tl-channels"><span class="tl-chip chip-email">Email</span></div>
+        </div>
+      </div>
+
+      <div class="tl-item">
+        <div class="tl-node">💬</div>
+        <div class="tl-content">
+          <div class="tl-delay">Day 5 — SMS Re-Engage</div>
+          <div class="tl-title">Conversational SMS Ping</div>
+          <div class="tl-desc">A short, casual text that reads like a real person checking in. Two sentences max. Open-ended question. SMS open rates are 98% — this step alone recovers 15–20% of "dead" leads.</div>
+          <div class="tl-channels"><span class="tl-chip chip-sms">SMS</span></div>
+        </div>
+      </div>
+
+      <div class="tl-item">
+        <div class="tl-node">🚪</div>
+        <div class="tl-content">
+          <div class="tl-delay">Day 7 — Permission Close</div>
+          <div class="tl-title">Break-Up Message</div>
+          <div class="tl-desc">The most effective email in the sequence. Apex tells the lead this is the last message, gives them an easy out, and paradoxically gets the highest reply rate of any step. Closes open loops and often re-activates cold leads.</div>
+          <div class="tl-channels"><span class="tl-chip chip-email">Email</span><span class="tl-chip chip-sms">SMS</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ FEATURES ══ -->
+<section class="features-section" id="features">
+  <div class="features-header">
+    <div class="section-eyebrow">Everything Included</div>
+    <h2>One AI rep.<br>Full sales stack.</h2>
+  </div>
+  <div class="features-grid">
+    <div class="feat-card">
+      <div class="feat-icon">⚡</div>
+      <div class="feat-title">Instant Lead Response</div>
+      <div class="feat-desc">Every new lead gets a personalized first touch within 5 minutes — 24/7, including weekends and holidays. Speed-to-lead is the single biggest driver of close rates.</div>
+      <span class="feat-stat">21× more likely to close vs 30-min delay</span>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon">✉️</div>
+      <div class="feat-title">Multi-Channel Outreach</div>
+      <div class="feat-desc">Apex follows up across email, SMS, and AI-powered voice — automatically selecting the best channel based on lead behavior and response patterns.</div>
+      <span class="feat-stat">3× reply rate vs single channel</span>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon">🧠</div>
+      <div class="feat-title">Personalized at Scale</div>
+      <div class="feat-desc">No mail-merge templates. Every message references the lead's industry, their specific inquiry, and where they are in your pipeline. Reads like a real person wrote it.</div>
+      <span class="feat-stat">67% higher open rate vs generic</span>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon">📅</div>
+      <div class="feat-title">Appointment Setting</div>
+      <div class="feat-desc">When a lead is ready, Apex sends a calendar link, handles rescheduling, and sends automated reminders — cutting no-shows by up to 80%.</div>
+      <span class="feat-stat">80% fewer no-shows</span>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon">🔥</div>
+      <div class="feat-title">Lead Scoring & Routing</div>
+      <div class="feat-desc">Apex scores every lead in real time based on engagement signals — opens, replies, clicks, time spent — and alerts your human reps only when a lead is truly hot.</div>
+      <span class="feat-stat">Focus on your top 20% of leads</span>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon">📊</div>
+      <div class="feat-title">Full Pipeline Visibility</div>
+      <div class="feat-desc">Live dashboard shows every lead, every touchpoint, every reply, and every booking. See exactly where deals are won and lost with no guesswork.</div>
+      <span class="feat-stat">Real-time analytics dashboard</span>
+    </div>
+  </div>
+</section>
+
+<!-- ══ VS TABLE ══ -->
+<section class="vs-section">
+  <div class="vs-wrap">
+    <div class="vs-header">
+      <div class="section-eyebrow">The Comparison</div>
+      <h2>Apex vs. a human<br>sales rep.</h2>
+    </div>
+    <table class="vs-table">
+      <thead>
+        <tr>
+          <th></th>
+          <th class="human-col">Human Sales Rep</th>
+          <th class="ai-col">Apex AI Sales Rep</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>Speed to first contact</td><td class="human-val">Hours (if remembered)</td><td class="ai-val">Under 5 minutes, always</td></tr>
+        <tr><td>Works after hours / weekends</td><td class="human-val"><span class="cross">✕</span></td><td class="ai-val"><span class="check">✓</span> 24/7/365</td></tr>
+        <tr><td>Follows up consistently</td><td class="human-val">Inconsistent, drops leads</td><td class="ai-val"><span class="check">✓</span> Every lead, every time</td></tr>
+        <tr><td>Multi-channel (email + SMS + call)</td><td class="human-val">Rarely all three</td><td class="ai-val"><span class="check">✓</span> Automatic</td></tr>
+        <tr><td>Personalized messages</td><td class="human-val">Depends on the rep</td><td class="ai-val"><span class="check">✓</span> Every message</td></tr>
+        <tr><td>Monthly cost</td><td class="human-val">$4,000–$8,000 + benefits</td><td class="ai-val"><span class="check">✓</span> From $297/mo</td></tr>
+        <tr><td>Handles 1,000+ leads simultaneously</td><td class="human-val"><span class="cross">✕</span></td><td class="ai-val"><span class="check">✓</span> No limit</td></tr>
+        <tr><td>Sick days / vacation / turnover</td><td class="human-val">Yes — pipeline gaps</td><td class="ai-val"><span class="check">✓</span> None, ever</td></tr>
+      </tbody>
+    </table>
+    <div class="vs-winner">Apex costs <strong>93% less than a human rep</strong> and works every minute your business is open — and every minute it's not.</div>
+  </div>
+</section>
+
+<!-- ══ PRICING ══ -->
+<section class="pricing-section" id="pricing">
+  <div class="pricing-header">
+    <div class="section-eyebrow">Pricing</div>
+    <h2>One closer. Flat rate.</h2>
+    <p class="section-sub" style="margin:0 auto;margin-top:10px;">No per-message fees. No rep commissions. Just a predictable monthly cost and a full pipeline.</p>
+  </div>
+  <div class="pricing-grid">
+    <div class="price-card">
+      <div class="plan-tier">Starter</div>
+      <div class="plan-price">$297<sub>/mo</sub></div>
+      <div class="plan-tagline">For solo operators and small teams under 100 leads/month</div>
+      <ul class="plan-features">
+        <li>Up to 100 active leads</li>
+        <li>Email + SMS follow-up</li>
+        <li>7-day automated sequence</li>
+        <li>Appointment booking</li>
+        <li>Basic lead scoring</li>
+        <li>Pipeline dashboard</li>
+      </ul>
+      <button class="btn-outline" style="width:100%;padding:12px;">Get Started</button>
+    </div>
+    <div class="price-card featured">
+      <div class="featured-tag">Most Popular</div>
+      <div class="plan-tier">Growth</div>
+      <div class="plan-price">$597<sub>/mo</sub></div>
+      <div class="plan-tagline">For growing businesses that can't afford to lose a single lead</div>
+      <ul class="plan-features">
+        <li>Unlimited active leads</li>
+        <li>Email + SMS + Voice outreach</li>
+        <li>Custom sequence builder</li>
+        <li>AI lead scoring + hot alerts</li>
+        <li>CRM integration (HubSpot, GHL)</li>
+        <li>A/B message testing</li>
+        <li>Slack / SMS hot lead alerts</li>
+        <li>Full analytics dashboard</li>
+      </ul>
+      <button class="btn-primary" style="width:100%;padding:12px;">Get Started</button>
+    </div>
+    <div class="price-card">
+      <div class="plan-tier">Agency</div>
+      <div class="plan-price">Custom</div>
+      <div class="plan-tagline">White-label for agencies managing multiple client pipelines</div>
+      <ul class="plan-features">
+        <li>Everything in Growth</li>
+        <li>Multi-client dashboard</li>
+        <li>White-label branding</li>
+        <li>Custom AI persona per client</li>
+        <li>Dedicated onboarding</li>
+        <li>API access</li>
+        <li>Revenue share options</li>
+      </ul>
+      <button class="btn-outline" style="width:100%;padding:12px;">Talk to Sales</button>
+    </div>
+  </div>
+</section>
+
+<!-- ══ CTA ══ -->
+<section class="cta-section">
+  <div class="cta-glow"></div>
+  <div class="section-eyebrow">Start Today</div>
+  <h2>Your leads deserve<br>a follow-up they'll actually get.</h2>
+  <p class="section-sub">Join 1,800+ businesses that replaced their follow-up problem with Apex AI.</p>
+  <div style="display:flex;gap:14px;justify-content:center;flex-wrap:wrap;">
+    <button class="btn-primary" style="font-size:1rem;padding:16px 36px;">Start Free Trial — 14 Days</button>
+    <button class="btn-outline" style="font-size:1rem;padding:16px 36px;" onclick="document.getElementById('composer').scrollIntoView({behavior:'smooth'})">Try the Composer First</button>
+  </div>
+</section>
+
+<!-- ══ FOOTER ══ -->
+<footer>
+  <div class="footer-logo">Apex<em>AI</em></div>
+  <div class="footer-links">
+    <a href="#">Features</a><a href="#">Pricing</a><a href="#">Integrations</a><a href="#">Blog</a><a href="#">Privacy</a>
+  </div>
+  <div class="footer-copy">© 2025 ApexAI · All rights reserved</div>
+</footer>
+
+<script>
+// ══════════════════════════════════════
+// PIPELINE SIMULATOR
+// ══════════════════════════════════════
+const leadsData = {
+  new: [
+    {name:'Marcus Webb',biz:'Liberty Dental',tag:'new',time:'just now',ai:true},
+    {name:'Priya Sharma',biz:'Bloom Spa',tag:'new',time:'3 min',ai:false},
+    {name:'Tom Okafor',biz:'Okafor Law',tag:'new',time:'11 min',ai:false},
+    {name:'Jessica Hale',biz:'Peak Fitness',tag:'new',time:'28 min',ai:false},
+  ],
+  contacted: [
+    {name:'Dave Kowalski',biz:'CoolAir HVAC',tag:'email',time:'2h ago',ai:true},
+    {name:'Naomi Cruz',biz:'Casa Cruz Rest.',tag:'sms',time:'3h ago',ai:true},
+    {name:'Brett Sanchez',biz:'Sanchez Roofing',tag:'email',time:'5h ago',ai:true},
+  ],
+  responded: [
+    {name:'Linda Park',biz:'Park Chiropractic',tag:'email',time:'1h ago',ai:true},
+    {name:'Anthony Ruiz',biz:'Ruiz Real Estate',tag:'sms',time:'4h ago',ai:true},
+  ],
+  qualified: [
+    {name:'Claire Dumont',biz:'Dumont & Assoc.',tag:'call',time:'Yesterday',ai:true},
+    {name:'Sam Nguyen',biz:'Nguyen Med. Clinic',tag:'call',time:'Yesterday',ai:true},
+  ],
+  booked: [
+    {name:'Rachel Kim',biz:'Bright Smile Dental',tag:'booked',time:'2 days ago',ai:true},
+  ]
+};
+
+const tagLabels = {new:'NEW',email:'EMAIL',sms:'SMS',call:'CALL',booked:'BOOKED'};
+const tagClasses = {new:'tag-new',email:'tag-email',sms:'tag-sms',call:'tag-call',booked:'tag-booked'};
+const colClasses = {new:'new-card',contacted:'contacted-card',responded:'responded-card',qualified:'qualified-card',booked:'booked-card'};
+
+function renderPipeline() {
+  ['new','contacted','responded','qualified','booked'].forEach(col => {
+    const container = document.getElementById('cards-' + col);
+    const countEl = document.getElementById('count-' + col);
+    const leads = leadsData[col];
+    container.innerHTML = '';
+    countEl.textContent = leads.length;
+    leads.forEach(lead => {
+      const card = document.createElement('div');
+      card.className = `lead-card ${colClasses[col]}`;
+      card.innerHTML = `
+        <div class="card-top">
+          <div class="card-name">${lead.name}</div>
+          <div class="card-time">${lead.time}</div>
+        </div>
+        <div class="card-biz">${lead.biz}</div>
+        <span class="card-tag ${tagClasses[lead.tag]}">${tagLabels[lead.tag]}</span>
+        ${lead.ai ? '<div class="card-ai-badge">AI</div>' : ''}
+      `;
+      card.onclick = () => advanceLead(col, lead);
+      container.appendChild(card);
+    });
+  });
+  updateConvRate();
+}
+
+function advanceLead(fromCol, lead) {
+  const cols = ['new','contacted','responded','qualified','booked'];
+  const idx = cols.indexOf(fromCol);
+  if (idx < cols.length - 1) {
+    const toCol = cols[idx + 1];
+    leadsData[fromCol] = leadsData[fromCol].filter(l => l !== lead);
+    const tagMap = {new:'email',contacted:'sms',responded:'call',qualified:'booked'};
+    lead.tag = tagMap[fromCol] || lead.tag;
+    lead.time = 'just now';
+    lead.ai = true;
+    leadsData[toCol].unshift(lead);
+    renderPipeline();
+    showToast(`${lead.name} moved to ${toCol.charAt(0).toUpperCase()+toCol.slice(1)} ✓`);
+  }
+}
+
+const firstNames = ['Jordan','Taylor','Morgan','Alex','Casey','Riley','Drew','Cameron','Blake','Avery','Quinn','Reese'];
+const lastNames = ['Rivera','Thompson','Patel','Johnson','Williams','Chen','Garcia','Martinez','Brown','Davis'];
+const bizNames = ['Sunshine Dental','Metro Law','FastFix HVAC','Summit Realty','Iron Gym','HomeClean Pro','ClearView Eye'];
+
+function addNewLead() {
+  const name = firstNames[Math.floor(Math.random()*firstNames.length)] + ' ' + lastNames[Math.floor(Math.random()*lastNames.length)];
+  const biz = bizNames[Math.floor(Math.random()*bizNames.length)];
+  leadsData.new.unshift({name, biz, tag:'new', time:'just now', ai:false});
+  renderPipeline();
+  showToast(`New lead injected: ${name}`);
+  // Auto-advance after 3 seconds
+  setTimeout(() => {
+    const lead = leadsData.new.find(l => l.name === name);
+    if (lead) advanceLead('new', lead);
+  }, 3000);
+}
+
+function updateConvRate() {
+  const total = Object.values(leadsData).reduce((s,a) => s+a.length, 0);
+  const booked = leadsData.booked.length;
+  document.getElementById('convRate').textContent = total > 0 ? Math.round(booked/total*100)+'%' : '0%';
+  document.getElementById('totalLeads').textContent = total;
+}
+
+function showToast(msg) {
+  const t = document.createElement('div');
+  t.style.cssText = `position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--violet);color:#fff;font-family:var(--mono);font-size:0.75rem;padding:10px 20px;border-radius:8px;z-index:500;animation:fadeInUp 0.3s ease;box-shadow:0 8px 24px var(--violet-glow);`;
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 2400);
+}
+
+// ══════════════════════════════════════
+// AI COMPOSER
+// ══════════════════════════════════════
+let currentChannel = 'email';
+let currentStep = 1;
+
+function setChannel(el, ch) {
+  currentChannel = ch;
+  document.querySelectorAll('.channel-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  const badge = document.getElementById('channelBadge');
+  const badgeMap = {email:'badge-email',sms:'badge-sms',voicemail:'badge-call'};
+  badge.className = 'out-channel-badge ' + badgeMap[ch];
+  badge.textContent = ch.toUpperCase();
+}
+
+function setStep(el, step) {
+  currentStep = step;
+  document.querySelectorAll('.seq-step').forEach(s => s.classList.remove('active-step'));
+  el.classList.add('active-step');
+}
+
+async function generateMessage() {
+  const leadType = document.getElementById('leadType').value;
+  const leadName = document.getElementById('leadName').value.trim() || 'the lead';
+  const btn = document.getElementById('generateBtn');
+
+  const leadTypeLabels = {
+    dental: 'a dental practice — the lead called and missed an appointment booking',
+    law: 'a law firm — the lead submitted a contact form about a legal matter',
+    hvac: 'an HVAC company — the lead requested emergency AC repair service',
+    realestate: 'a real estate agency — the lead requested a free home valuation',
+    gym: 'a fitness studio — the lead signed up for a free trial but hasn\'t visited yet',
+    ecomm: 'an eCommerce store — the lead abandoned a cart worth $189',
+    saas: 'a SaaS product — the lead signed up for free trial 3 days ago but never logged in',
+    roofing: 'a roofing company — the lead submitted a storm damage quote request'
+  };
+
+  const stepLabels = {
+    1: 'Immediate first contact (0-5 minutes after lead came in) — make it fast, warm, personal',
+    2: 'Day 1 follow-up (no reply yet) — try a different angle, add value, don\'t just say "following up"',
+    3: 'Day 3 follow-up — add social proof or a relevant case study, make booking easy',
+    4: 'Day 7 break-up message — this is the last attempt, give them an easy out, use the permission close'
+  };
+
+  const channelGuide = {
+    email: 'Write a personalized sales follow-up EMAIL. Include a subject line (format: Subject: ...) then the email body. Keep under 150 words. Conversational, not corporate.',
+    sms: 'Write a follow-up SMS text message. MAX 160 characters. Sound human and casual, not robotic. No emojis overload.',
+    voicemail: 'Write a voicemail script the AI will read aloud. 20-30 seconds when spoken (~60-80 words). Warm, natural, ends with a callback number placeholder.'
+  };
+
+  const systemPrompt = `You are Apex AI, an expert sales follow-up AI that writes highly converting messages for local businesses.
+Your messages are: specific (not generic), conversational (not corporate), short (under 150 words for email, 160 chars for SMS), and always end with a single clear call to action.
+Never use: "I hope this email finds you well", "Just following up", "Per my last email", "Touching base", "Circling back".
+Always use: the lead's name, reference the specific reason they contacted, and make the next step frictionless.
+Output ONLY the message content — nothing else. No preamble, no meta-commentary.`;
+
+  const userPrompt = `Business type: ${leadTypeLabels[leadType]}
+Lead name: ${leadName}
+Sequence step: ${stepLabels[currentStep]}
+Channel: ${channelGuide[currentChannel]}
+Write the message now.`;
+
+  // UI state
+  btn.disabled = true;
+  btn.innerHTML = '<span>⏳</span> Writing...';
+  document.getElementById('placeholderState').style.display = 'none';
+  document.getElementById('messagePreview').style.display = 'none';
+  document.getElementById('outputActions').style.display = 'none';
+  document.getElementById('typingWrap').classList.add('show');
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 1000,
+        system: systemPrompt,
+        messages: [{role:'user', content: userPrompt}]
+      })
+    });
+    const data = await res.json();
+    const text = data.content?.[0]?.text || 'Unable to generate message. Please try again.';
+
+    // Parse subject line if email
+    let subject = '';
+    let body = text;
+    if (currentChannel === 'email' && text.includes('Subject:')) {
+      const lines = text.split('\n');
+      const subjectLine = lines.find(l => l.trim().startsWith('Subject:'));
+      if (subjectLine) {
+        subject = subjectLine.replace('Subject:', '').trim();
+        body = lines.filter(l => !l.trim().startsWith('Subject:')).join('\n').trim();
+      }
+    }
+
+    document.getElementById('typingWrap').classList.remove('show');
+    document.getElementById('messagePreview').style.display = 'block';
+    document.getElementById('outputActions').style.display = 'flex';
+
+    if (subject) {
+      document.getElementById('msgSubject').innerHTML = `Subject: <span>${subject}</span>`;
+      document.getElementById('msgSubject').style.display = 'block';
+    } else {
+      document.getElementById('msgSubject').style.display = 'none';
+    }
+
+    document.getElementById('msgBody').textContent = body;
+
+    // Animate score
+    const score = 82 + Math.floor(Math.random() * 15);
+    document.getElementById('scoreBar').style.width = score + '%';
+    document.getElementById('scoreVal').textContent = score + '%';
+
+  } catch(e) {
+    document.getElementById('typingWrap').classList.remove('show');
+    document.getElementById('placeholderState').style.display = 'flex';
+    document.getElementById('placeholderState').querySelector('p').textContent = 'Connection error. Please try again.';
+  }
+
+  btn.disabled = false;
+  btn.innerHTML = '<span>⚡</span> Generate Follow-Up Message';
+}
+
+// ══ INIT ══
+document.addEventListener('DOMContentLoaded', () => {
+  renderPipeline();
+  // Auto-advance a lead every 8 seconds for demo effect
+  setInterval(() => {
+    const cols = ['new','contacted','responded','qualified'];
+    for (const col of cols) {
+      if (leadsData[col].length > 0) {
+        const lead = leadsData[col][leadsData[col].length - 1];
+        advanceLead(col, lead);
+        break;
+      }
+    }
+  }, 8000);
+});
+</script>
+</body>
+</html>

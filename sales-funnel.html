@@ -1,0 +1,830 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>NexusAI — Sales Funnel</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Mono:wght@400;700&display=swap');
+
+:root {
+  --bg: #05080F;
+  --surface: #0C111C;
+  --card: #111827;
+  --border: #1E2D45;
+  --cyan: #00D4FF;
+  --cyan-dim: rgba(0,212,255,0.10);
+  --cyan-glow: rgba(0,212,255,0.35);
+  --green: #00F59B;
+  --green-dim: rgba(0,245,155,0.10);
+  --amber: #FFB800;
+  --red: #FF4D4D;
+  --snow: #F0F6FF;
+  --mist: #6B7FA3;
+  --sans: 'Inter', sans-serif;
+  --mono: 'Space Mono', monospace;
+}
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{background:var(--bg);color:var(--snow);font-family:var(--sans);line-height:1.6;overflow-x:hidden;min-height:100vh;}
+
+/* ── GRID BG ── */
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(0,212,255,0.025) 1px,transparent 1px),linear-gradient(90deg,rgba(0,212,255,0.025) 1px,transparent 1px);background-size:56px 56px;pointer-events:none;z-index:0;}
+
+/* ── PAGES ── */
+.page{display:none;position:relative;z-index:1;min-height:100vh;}
+.page.active{display:block;}
+
+/* ── PROGRESS BAR ── */
+.funnel-progress{position:fixed;top:0;left:0;right:0;z-index:200;height:3px;background:var(--border);}
+.funnel-progress-fill{height:100%;background:linear-gradient(90deg,var(--cyan),var(--green));transition:width 0.5s ease;}
+
+/* ── STEP NAV ── */
+.step-nav{position:fixed;top:16px;left:50%;transform:translateX(-50%);z-index:199;display:flex;align-items:center;gap:8px;background:rgba(5,8,15,0.85);border:1px solid var(--border);border-radius:40px;padding:8px 20px;backdrop-filter:blur(12px);}
+.step-dot{width:8px;height:8px;border-radius:50%;background:var(--border);transition:all 0.3s;}
+.step-dot.done{background:var(--green);}
+.step-dot.active{background:var(--cyan);box-shadow:0 0 8px var(--cyan-glow);width:24px;border-radius:4px;}
+.step-label{font-family:var(--mono);font-size:0.65rem;letter-spacing:0.1em;color:var(--mist);margin-left:8px;}
+
+/* ─────────────────────────────────────── */
+/* PAGE 1 — LEAD CAPTURE                  */
+/* ─────────────────────────────────────── */
+.lc-wrap{min-height:100vh;display:grid;grid-template-columns:1fr 1fr;align-items:center;}
+
+.lc-left{padding:80px 60px 80px 80px;}
+.lc-eyebrow{display:inline-flex;align-items:center;gap:8px;font-family:var(--mono);font-size:0.7rem;letter-spacing:0.14em;text-transform:uppercase;color:var(--cyan);margin-bottom:24px;border:1px solid rgba(0,212,255,0.2);padding:6px 14px;border-radius:20px;background:var(--cyan-dim);}
+.lc-eyebrow .blink{width:6px;height:6px;background:var(--green);border-radius:50%;animation:blink 1.4s infinite;}
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:0.2;}}
+
+.lc-h1{font-size:clamp(2.4rem,4.5vw,3.8rem);font-weight:900;line-height:1.03;letter-spacing:-0.04em;margin-bottom:20px;}
+.lc-h1 .c{color:var(--cyan);}
+.lc-h1 .g{background:linear-gradient(135deg,var(--cyan),var(--green));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+
+.lc-sub{font-size:1.05rem;color:var(--mist);max-width:460px;line-height:1.7;margin-bottom:36px;}
+
+.pain-list{list-style:none;display:flex;flex-direction:column;gap:10px;margin-bottom:40px;}
+.pain-list li{display:flex;align-items:flex-start;gap:12px;font-size:0.9rem;color:var(--snow);}
+.pain-list li .icon{font-size:1rem;flex-shrink:0;margin-top:1px;}
+.pain-list li .bad{color:var(--red);margin-right:4px;}
+.pain-list li .good{color:var(--green);margin-right:4px;}
+
+.social-proof{display:flex;align-items:center;gap:14px;padding-top:24px;border-top:1px solid var(--border);}
+.avatars{display:flex;}
+.avatars span{width:32px;height:32px;border-radius:50%;border:2px solid var(--bg);display:flex;align-items:center;justify-content:center;font-size:0.85rem;margin-left:-8px;background:var(--card);}
+.avatars span:first-child{margin-left:0;}
+.sp-text{font-size:0.82rem;color:var(--mist);}
+.sp-text strong{color:var(--snow);}
+
+/* RIGHT FORM PANEL */
+.lc-right{padding:60px 80px 60px 40px;display:flex;align-items:center;justify-content:center;}
+.lc-form-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:40px;width:100%;max-width:420px;box-shadow:0 40px 80px rgba(0,0,0,0.4);}
+.form-title{font-size:1.25rem;font-weight:800;margin-bottom:4px;}
+.form-sub{font-size:0.82rem;color:var(--mist);margin-bottom:28px;}
+
+.field{margin-bottom:16px;}
+.field label{display:block;font-family:var(--mono);font-size:0.68rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--mist);margin-bottom:6px;}
+.field input,.field select{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--snow);font-family:var(--sans);font-size:0.9rem;padding:11px 14px;outline:none;transition:border-color 0.2s;}
+.field input:focus,.field select:focus{border-color:var(--cyan);}
+.field input::placeholder{color:var(--mist);}
+.field select option{background:var(--card);}
+
+.cta-btn{width:100%;background:linear-gradient(135deg,var(--cyan),var(--green));color:#05080F;border:none;border-radius:8px;padding:14px;font-family:var(--sans);font-size:1rem;font-weight:800;cursor:pointer;transition:opacity 0.2s,transform 0.15s;letter-spacing:-0.01em;margin-top:4px;}
+.cta-btn:hover{opacity:0.9;transform:translateY(-1px);}
+.cta-btn:disabled{opacity:0.5;cursor:not-allowed;transform:none;}
+
+.form-guarantee{display:flex;align-items:center;gap:8px;font-size:0.75rem;color:var(--mist);margin-top:14px;justify-content:center;}
+.form-guarantee span{color:var(--green);}
+
+/* ─────────────────────────────────────── */
+/* PAGE 2 — VSL                            */
+/* ─────────────────────────────────────── */
+.vsl-wrap{max-width:860px;margin:0 auto;padding:80px 24px 60px;}
+
+.vsl-eyebrow{text-align:center;font-family:var(--mono);font-size:0.7rem;letter-spacing:0.14em;text-transform:uppercase;color:var(--green);margin-bottom:16px;}
+.vsl-h1{text-align:center;font-size:clamp(1.9rem,4vw,3rem);font-weight:900;letter-spacing:-0.03em;line-height:1.1;margin-bottom:12px;}
+.vsl-h1 .c{color:var(--cyan);}
+.vsl-sub{text-align:center;font-size:1rem;color:var(--mist);margin-bottom:36px;}
+
+/* VIDEO PLACEHOLDER */
+.vsl-video-wrap{position:relative;background:var(--card);border:1px solid var(--border);border-radius:16px;overflow:hidden;aspect-ratio:16/9;margin-bottom:40px;cursor:pointer;}
+.vsl-video-bg{position:absolute;inset:0;background:linear-gradient(135deg,#0a1628 0%,#051020 100%);}
+.vsl-video-inner{position:relative;z-index:1;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;}
+.play-btn{width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,var(--cyan),var(--green));display:flex;align-items:center;justify-content:center;font-size:2rem;cursor:pointer;transition:transform 0.2s,box-shadow 0.2s;box-shadow:0 0 40px var(--cyan-glow);}
+.play-btn:hover{transform:scale(1.08);box-shadow:0 0 60px var(--cyan-glow);}
+.vsl-video-label{font-family:var(--mono);font-size:0.72rem;letter-spacing:0.1em;color:var(--mist);text-transform:uppercase;}
+.vsl-duration{position:absolute;bottom:16px;right:20px;font-family:var(--mono);font-size:0.72rem;color:var(--mist);}
+
+/* VSL SCRIPT / PAIN-AGITATE-SOLVE */
+.vsl-script{display:flex;flex-direction:column;gap:32px;margin-bottom:48px;}
+.vs-block{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:28px 32px;}
+.vs-block.pain{border-left:3px solid var(--red);}
+.vs-block.agitate{border-left:3px solid var(--amber);}
+.vs-block.solve{border-left:3px solid var(--green);}
+.vs-tag{font-family:var(--mono);font-size:0.65rem;letter-spacing:0.12em;text-transform:uppercase;margin-bottom:10px;}
+.vs-block.pain .vs-tag{color:var(--red);}
+.vs-block.agitate .vs-tag{color:var(--amber);}
+.vs-block.solve .vs-tag{color:var(--green);}
+.vs-block h3{font-size:1.15rem;font-weight:800;margin-bottom:10px;letter-spacing:-0.02em;}
+.vs-block p{font-size:0.9rem;color:var(--mist);line-height:1.7;}
+
+/* ROI CALC */
+.roi-calc{background:var(--card);border:1px solid var(--cyan);border-radius:16px;padding:36px;margin-bottom:48px;}
+.roi-title{font-size:1.1rem;font-weight:800;margin-bottom:4px;}
+.roi-sub{font-size:0.82rem;color:var(--mist);margin-bottom:24px;}
+.roi-slider-wrap{margin-bottom:20px;}
+.roi-slider-label{display:flex;justify-content:space-between;font-size:0.82rem;color:var(--mist);margin-bottom:8px;}
+.roi-slider-label strong{color:var(--snow);}
+input[type=range]{width:100%;-webkit-appearance:none;height:4px;background:var(--border);border-radius:2px;outline:none;}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:50%;background:var(--cyan);cursor:pointer;box-shadow:0 0 8px var(--cyan-glow);}
+.roi-result{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:24px;}
+.roi-num-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px;text-align:center;}
+.roi-num{font-family:var(--mono);font-size:1.6rem;font-weight:700;color:var(--green);letter-spacing:-0.03em;}
+.roi-lbl{font-size:0.72rem;color:var(--mist);margin-top:4px;}
+
+.vsl-cta-wrap{text-align:center;}
+.vsl-cta{display:inline-block;background:linear-gradient(135deg,var(--cyan),var(--green));color:#05080F;border:none;border-radius:10px;padding:18px 48px;font-family:var(--sans);font-size:1.05rem;font-weight:900;cursor:pointer;transition:opacity 0.2s,transform 0.15s;letter-spacing:-0.01em;margin-bottom:12px;}
+.vsl-cta:hover{opacity:0.9;transform:translateY(-2px);}
+.vsl-cta-note{font-size:0.78rem;color:var(--mist);}
+
+/* TESTIMONIALS */
+.testi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:48px;}
+.testi-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:24px;}
+.stars{color:var(--amber);font-size:0.85rem;margin-bottom:10px;}
+.testi-quote{font-size:0.85rem;color:var(--mist);line-height:1.65;margin-bottom:14px;font-style:italic;}
+.testi-author{display:flex;align-items:center;gap:10px;}
+.testi-avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--cyan),var(--green));display:flex;align-items:center;justify-content:center;font-size:0.9rem;flex-shrink:0;}
+.testi-name{font-size:0.82rem;font-weight:700;}
+.testi-biz{font-size:0.72rem;color:var(--mist);}
+
+/* ─────────────────────────────────────── */
+/* PAGE 3 — BOOKING                        */
+/* ─────────────────────────────────────── */
+.book-wrap{max-width:720px;margin:0 auto;padding:80px 24px 60px;}
+.book-header{text-align:center;margin-bottom:48px;}
+.book-eyebrow{font-family:var(--mono);font-size:0.7rem;letter-spacing:0.14em;text-transform:uppercase;color:var(--cyan);margin-bottom:14px;}
+.book-h1{font-size:clamp(1.8rem,3.5vw,2.6rem);font-weight:900;letter-spacing:-0.03em;line-height:1.1;margin-bottom:10px;}
+.book-sub{font-size:0.95rem;color:var(--mist);}
+
+.book-card{background:var(--card);border:1px solid var(--border);border-radius:16px;overflow:hidden;}
+.book-card-header{background:var(--surface);padding:20px 28px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.book-card-title{font-weight:700;font-size:0.95rem;}
+.book-badge{font-family:var(--mono);font-size:0.65rem;letter-spacing:0.1em;text-transform:uppercase;padding:4px 12px;border-radius:20px;background:var(--green-dim);color:var(--green);border:1px solid rgba(0,245,155,0.2);}
+
+.book-body{padding:32px 28px;}
+
+/* CALENDAR */
+.cal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;}
+.cal-month{font-weight:700;font-size:1rem;}
+.cal-nav{display:flex;gap:8px;}
+.cal-nav-btn{background:var(--surface);border:1px solid var(--border);color:var(--snow);width:32px;height:32px;border-radius:6px;cursor:pointer;font-size:0.85rem;transition:border-color 0.2s;}
+.cal-nav-btn:hover{border-color:var(--cyan);}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:24px;}
+.cal-day-name{text-align:center;font-family:var(--mono);font-size:0.65rem;letter-spacing:0.08em;color:var(--mist);padding:6px 0;text-transform:uppercase;}
+.cal-day{aspect-ratio:1;display:flex;align-items:center;justify-content:center;border-radius:8px;font-size:0.85rem;cursor:pointer;transition:all 0.15s;border:1px solid transparent;}
+.cal-day.empty{cursor:default;}
+.cal-day.past{color:var(--border);cursor:default;}
+.cal-day.available{color:var(--snow);}
+.cal-day.available:hover{background:var(--cyan-dim);border-color:rgba(0,212,255,0.3);color:var(--cyan);}
+.cal-day.selected{background:var(--cyan);color:#05080F;font-weight:800;border-color:var(--cyan);}
+
+/* TIME SLOTS */
+.slots-label{font-family:var(--mono);font-size:0.68rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--mist);margin-bottom:12px;}
+.slots-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:28px;}
+.slot{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px;text-align:center;cursor:pointer;font-size:0.85rem;font-weight:600;transition:all 0.15s;}
+.slot:hover{border-color:var(--cyan);color:var(--cyan);}
+.slot.selected{background:var(--cyan-dim);border-color:var(--cyan);color:var(--cyan);}
+.slot.taken{opacity:0.3;cursor:not-allowed;}
+
+/* BOOKING FORM */
+.book-form{display:flex;flex-direction:column;gap:14px;margin-bottom:24px;}
+.book-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+
+.confirm-summary{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px 20px;margin-bottom:20px;font-size:0.88rem;}
+.cs-row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);}
+.cs-row:last-child{border-bottom:none;}
+.cs-key{color:var(--mist);}
+.cs-val{font-weight:700;color:var(--snow);}
+
+/* ─────────────────────────────────────── */
+/* PAGE 4 — THANK YOU                      */
+/* ─────────────────────────────────────── */
+.ty-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:80px 24px;}
+.ty-card{max-width:640px;width:100%;text-align:center;}
+
+.ty-icon-wrap{position:relative;width:100px;height:100px;margin:0 auto 32px;}
+.ty-icon-ring{position:absolute;inset:0;border-radius:50%;border:2px solid var(--green);animation:ringpulse 2s ease-out infinite;}
+@keyframes ringpulse{0%{transform:scale(1);opacity:1;}100%{transform:scale(1.6);opacity:0;}}
+.ty-icon{width:100px;height:100px;border-radius:50%;background:linear-gradient(135deg,var(--cyan),var(--green));display:flex;align-items:center;justify-content:center;font-size:2.5rem;position:relative;z-index:1;}
+
+.ty-h1{font-size:clamp(2rem,4vw,3rem);font-weight:900;letter-spacing:-0.04em;margin-bottom:12px;}
+.ty-h1 .c{color:var(--cyan);}
+.ty-sub{font-size:1rem;color:var(--mist);margin-bottom:40px;line-height:1.7;}
+
+.ty-details{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:28px 32px;margin-bottom:36px;text-align:left;}
+.ty-detail-row{display:flex;align-items:flex-start;gap:14px;padding:12px 0;border-bottom:1px solid var(--border);}
+.ty-detail-row:last-child{border-bottom:none;}
+.ty-detail-icon{width:36px;height:36px;border-radius:8px;background:var(--cyan-dim);border:1px solid rgba(0,212,255,0.2);display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;}
+.ty-detail-text strong{display:block;font-size:0.9rem;font-weight:700;margin-bottom:2px;}
+.ty-detail-text span{font-size:0.82rem;color:var(--mist);}
+
+.ty-next-steps{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:24px;margin-bottom:32px;text-align:left;}
+.ty-ns-title{font-family:var(--mono);font-size:0.68rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--mist);margin-bottom:16px;}
+.ty-ns-list{list-style:none;display:flex;flex-direction:column;gap:12px;}
+.ty-ns-list li{display:flex;align-items:flex-start;gap:12px;font-size:0.88rem;}
+.ty-ns-num{width:24px;height:24px;border-radius:50%;background:var(--cyan-dim);border:1px solid rgba(0,212,255,0.3);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:0.65rem;color:var(--cyan);flex-shrink:0;margin-top:1px;}
+
+.ty-share{font-size:0.82rem;color:var(--mist);margin-bottom:24px;}
+.share-btns{display:flex;justify-content:center;gap:12px;}
+.share-btn{background:var(--card);border:1px solid var(--border);color:var(--snow);padding:10px 20px;border-radius:8px;font-size:0.82rem;font-weight:600;cursor:pointer;transition:border-color 0.2s;}
+.share-btn:hover{border-color:var(--cyan);color:var(--cyan);}
+
+/* ── UTILITIES ── */
+.mt-8{margin-top:8px;}
+.mt-16{margin-top:16px;}
+.text-center{text-align:center;}
+
+@media(max-width:900px){
+  .lc-wrap{grid-template-columns:1fr;}
+  .lc-left{padding:80px 24px 24px;}
+  .lc-right{padding:24px 24px 60px;}
+  .lc-form-card{max-width:100%;}
+  .testi-grid{grid-template-columns:1fr;}
+  .roi-result{grid-template-columns:1fr;}
+  .book-row{grid-template-columns:1fr;}
+  .slots-grid{grid-template-columns:repeat(2,1fr);}
+}
+</style>
+</head>
+<body>
+
+<!-- PROGRESS -->
+<div class="funnel-progress"><div class="funnel-progress-fill" id="progressFill" style="width:25%"></div></div>
+
+<!-- STEP NAV -->
+<div class="step-nav">
+  <div class="step-dot active" id="dot1"></div>
+  <div class="step-dot" id="dot2"></div>
+  <div class="step-dot" id="dot3"></div>
+  <div class="step-dot" id="dot4"></div>
+  <span class="step-label" id="stepLabel">Step 1 of 4</span>
+</div>
+
+<!-- ══════════════════════════════════════ -->
+<!-- PAGE 1: LEAD CAPTURE                  -->
+<!-- ══════════════════════════════════════ -->
+<div class="page active" id="page1">
+  <div class="lc-wrap">
+    <div class="lc-left">
+      <div class="lc-eyebrow"><span class="blink"></span> Limited Spots — June 2025</div>
+      <h1 class="lc-h1">Your phone is <span class="c">losing you</span><br>money right now.</h1>
+      <p class="lc-sub">Every unanswered call is a customer who called your competitor instead. Our AI receptionist answers every call, 24/7 — and pays for itself with the first appointment it books.</p>
+
+      <ul class="pain-list">
+        <li><span class="icon">❌</span><span><span class="bad">Before Nexus:</span> Calls go to voicemail after hours. Leads go cold. Revenue walks out the door.</span></li>
+        <li><span class="icon">✅</span><span><span class="good">After Nexus:</span> Every call answered in 2 seconds. Every lead captured. Every appointment booked automatically.</span></li>
+        <li><span class="icon">✅</span><span><span class="good">Zero setup headaches:</span> We configure everything for you. You're live within 24 hours.</span></li>
+        <li><span class="icon">✅</span><span><span class="good">Flat monthly fee:</span> No per-minute charges. No surprise bills. Predictable cost, unlimited calls.</span></li>
+      </ul>
+
+      <div class="social-proof">
+        <div class="avatars">
+          <span>👩</span><span>👨</span><span>👩</span><span>👨</span><span>+</span>
+        </div>
+        <div class="sp-text"><strong>2,400+ local businesses</strong> already never miss a call</div>
+      </div>
+    </div>
+
+    <div class="lc-right">
+      <div class="lc-form-card">
+        <div class="form-title">See How Much You're Losing</div>
+        <div class="form-sub">Get your free missed-call revenue report in 60 seconds.</div>
+
+        <div class="field">
+          <label>Business Type</label>
+          <select id="lc-biztype">
+            <option value="">Select your industry...</option>
+            <option>Dental / Medical</option>
+            <option>Law Firm</option>
+            <option>HVAC / Plumbing</option>
+            <option>Real Estate</option>
+            <option>Spa / Salon / Gym</option>
+            <option>Auto Shop</option>
+            <option>Restaurant / Hotel</option>
+            <option>Accounting / Finance</option>
+            <option>Other</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Monthly Call Volume (estimate)</label>
+          <select id="lc-calls">
+            <option value="">How many calls per month?</option>
+            <option value="50">Under 50 calls</option>
+            <option value="150">50–200 calls</option>
+            <option value="350">200–500 calls</option>
+            <option value="750">500–1,000 calls</option>
+            <option value="1500">1,000+ calls</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Your First Name</label>
+          <input type="text" id="lc-name" placeholder="First name..." />
+        </div>
+        <div class="field">
+          <label>Business Email</label>
+          <input type="email" id="lc-email" placeholder="you@yourbusiness.com" />
+        </div>
+        <div class="field">
+          <label>Mobile Number</label>
+          <input type="tel" id="lc-phone" placeholder="+1 (305) 555-0100" />
+        </div>
+
+        <button class="cta-btn" onclick="goToPage(2)">Calculate My Lost Revenue →</button>
+
+        <div class="form-guarantee">
+          <span>🔒</span> No spam. No credit card. Just your free report.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════ -->
+<!-- PAGE 2: VSL + PITCH                   -->
+<!-- ══════════════════════════════════════ -->
+<div class="page" id="page2">
+  <div class="vsl-wrap">
+    <div class="vsl-eyebrow">🎯 Your Free Revenue Report is Ready</div>
+    <h1 class="vsl-h1"><span class="c" id="vsl-name">Hey!</span> Here's What<br>Missed Calls Cost You</h1>
+    <p class="vsl-sub">Watch this 4-minute breakdown — then claim your free setup consultation.</p>
+
+    <!-- VIDEO PLACEHOLDER -->
+    <div class="vsl-video-wrap" onclick="toggleVideo(this)">
+      <div class="vsl-video-bg"></div>
+      <div class="vsl-video-inner" id="videoInner">
+        <div class="play-btn" id="playBtn">▶</div>
+        <div class="vsl-video-label">Watch: How Nexus Fills Your Calendar</div>
+      </div>
+      <div class="vsl-duration">4:12</div>
+    </div>
+
+    <!-- ROI CALCULATOR -->
+    <div class="roi-calc">
+      <div class="roi-title">📊 Your Missed Revenue Calculator</div>
+      <div class="roi-sub">Based on your business type, here's what unanswered calls are costing you every month.</div>
+
+      <div class="roi-slider-wrap">
+        <div class="roi-slider-label"><span>Calls per month</span><strong id="callsVal">150</strong></div>
+        <input type="range" min="20" max="1000" value="150" id="callsSlider" oninput="updateROI()"/>
+      </div>
+      <div class="roi-slider-wrap">
+        <div class="roi-slider-label"><span>% calls missed / go to voicemail</span><strong id="missedVal">35%</strong></div>
+        <input type="range" min="10" max="70" value="35" id="missedSlider" oninput="updateROI()"/>
+      </div>
+      <div class="roi-slider-wrap">
+        <div class="roi-slider-label"><span>Average value per new customer</span><strong id="valueVal">$400</strong></div>
+        <input type="range" min="50" max="5000" value="400" id="valueSlider" oninput="updateROI()"/>
+      </div>
+
+      <div class="roi-result">
+        <div class="roi-num-card">
+          <div class="roi-num" id="roi-missed">53</div>
+          <div class="roi-lbl">Calls missed/mo</div>
+        </div>
+        <div class="roi-num-card">
+          <div class="roi-num" id="roi-lost">$21K</div>
+          <div class="roi-lbl">Revenue lost/mo</div>
+        </div>
+        <div class="roi-num-card">
+          <div class="roi-num" id="roi-annual">$252K</div>
+          <div class="roi-lbl">Lost per year</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PAS BLOCKS -->
+    <div class="vsl-script">
+      <div class="vs-block pain">
+        <div class="vs-tag">The Problem</div>
+        <h3>Your phone is a leaky bucket.</h3>
+        <p>Every time a call hits voicemail — during lunch, after 5pm, on weekends — that's a real person who needed your service, didn't get an answer, and called someone else. You'll never even know they called. This isn't a small problem. For most local businesses, missed calls represent 20–40% of all inbound revenue opportunities.</p>
+      </div>
+      <div class="vs-block agitate">
+        <div class="vs-tag">Why It's Getting Worse</div>
+        <h3>Customers don't leave voicemails anymore.</h3>
+        <p>74% of callers who reach voicemail hang up without leaving a message. They don't call back. They Google your competitor, get a live answer, and book with them instead. Hiring more front-desk staff costs $35,000–$55,000 per year and still leaves gaps. The problem isn't your team — it's that the phone never sleeps and humans have to.</p>
+      </div>
+      <div class="vs-block solve">
+        <div class="vs-tag">The Solution</div>
+        <h3>A receptionist that never sleeps, never misses a call, never has a bad day.</h3>
+        <p>Nexus answers every inbound call in under 2 seconds — any time, any day. It qualifies the caller, books the appointment directly into your calendar, sends confirmation texts, and routes urgent matters to you immediately. Most clients recover our entire monthly fee within the first 3 bookings. Setup takes 24 hours. We do it all for you.</p>
+      </div>
+    </div>
+
+    <!-- TESTIMONIALS -->
+    <div class="testi-grid">
+      <div class="testi-card">
+        <div class="stars">★★★★★</div>
+        <div class="testi-quote">"We were missing 40+ calls a month. First week with Nexus we booked 11 new patients we would have lost. It paid for itself in 3 days."</div>
+        <div class="testi-author">
+          <div class="testi-avatar">🦷</div>
+          <div><div class="testi-name">Dr. Rachel Kim</div><div class="testi-biz">Miami Dental Associates</div></div>
+        </div>
+      </div>
+      <div class="testi-card">
+        <div class="stars">★★★★★</div>
+        <div class="testi-quote">"My HVAC company gets emergency calls at 2am. Nexus captures every one, dispatches my on-call tech, and I wake up to a full schedule. Game changer."</div>
+        <div class="testi-author">
+          <div class="testi-avatar">❄️</div>
+          <div><div class="testi-name">Marcus Johnson</div><div class="testi-biz">AirPro HVAC, Fort Lauderdale</div></div>
+        </div>
+      </div>
+      <div class="testi-card">
+        <div class="stars">★★★★★</div>
+        <div class="testi-quote">"As a solo attorney I can't answer during depositions. Nexus handles intake, qualifies leads, and I only talk to serious prospects. My close rate went up 60%."</div>
+        <div class="testi-author">
+          <div class="testi-avatar">⚖️</div>
+          <div><div class="testi-name">Sofia Reyes, Esq.</div><div class="testi-biz">Reyes Family Law</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="vsl-cta-wrap">
+      <button class="vsl-cta" onclick="goToPage(3)">Claim My Free Setup Call →</button>
+      <div class="vsl-cta-note">🔒 No commitment. We'll show you exactly how Nexus works for your business.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════ -->
+<!-- PAGE 3: BOOKING                        -->
+<!-- ══════════════════════════════════════ -->
+<div class="page" id="page3">
+  <div class="book-wrap">
+    <div class="book-header">
+      <div class="book-eyebrow">📅 Free Strategy Call</div>
+      <h1 class="book-h1">Pick Your 30-Minute<br>Setup Consultation</h1>
+      <p class="book-sub">We'll demo your AI receptionist live, answer all your questions, and give you a custom ROI projection — free, no pressure.</p>
+    </div>
+
+    <div class="book-card">
+      <div class="book-card-header">
+        <div class="book-card-title">🗓 Select Date & Time</div>
+        <div class="book-badge">Free · 30 min · Zoom</div>
+      </div>
+      <div class="book-body">
+        <!-- CALENDAR -->
+        <div class="cal-header">
+          <div class="cal-month" id="calMonth">July 2025</div>
+          <div class="cal-nav">
+            <button class="cal-nav-btn" onclick="prevMonth()">‹</button>
+            <button class="cal-nav-btn" onclick="nextMonth()">›</button>
+          </div>
+        </div>
+        <div class="cal-grid" id="calGrid"></div>
+
+        <!-- TIME SLOTS -->
+        <div id="slotsSection" style="display:none;">
+          <div class="slots-label">Available Times — <span id="selectedDateLabel"></span></div>
+          <div class="slots-grid" id="slotsGrid"></div>
+        </div>
+
+        <!-- BOOKING FORM -->
+        <div id="bookFormSection" style="display:none;">
+          <div class="confirm-summary" id="confirmSummary"></div>
+          <div class="book-form">
+            <div class="book-row">
+              <div class="field"><label>First Name</label><input type="text" id="book-fname" placeholder="First name" /></div>
+              <div class="field"><label>Last Name</label><input type="text" id="book-lname" placeholder="Last name" /></div>
+            </div>
+            <div class="field"><label>Email Address</label><input type="email" id="book-email" placeholder="you@company.com" /></div>
+            <div class="field"><label>Mobile Number</label><input type="tel" id="book-phone" placeholder="+1 (305) 555-0100" /></div>
+            <div class="field"><label>Business Name</label><input type="text" id="book-biz" placeholder="Your business name" /></div>
+            <div class="field">
+              <label>Biggest Challenge Right Now</label>
+              <select id="book-challenge">
+                <option>Missing calls after hours</option>
+                <option>Too many calls, not enough staff</option>
+                <option>Leads not converting fast enough</option>
+                <option>Appointment no-shows</option>
+                <option>After-hours emergency coverage</option>
+              </select>
+            </div>
+          </div>
+          <button class="cta-btn" onclick="confirmBooking()">Confirm My Free Call →</button>
+          <div class="form-guarantee mt-8 text-center" style="justify-content:center;">
+            <span>🔒</span> No credit card. No commitment. 100% free consultation.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════ -->
+<!-- PAGE 4: THANK YOU                     -->
+<!-- ══════════════════════════════════════ -->
+<div class="page" id="page4">
+  <div class="ty-wrap">
+    <div class="ty-card">
+      <div class="ty-icon-wrap">
+        <div class="ty-icon-ring"></div>
+        <div class="ty-icon">✅</div>
+      </div>
+
+      <h1 class="ty-h1">You're <span class="c">confirmed,</span><br><span id="ty-name">friend</span>!</h1>
+      <p class="ty-sub">Your free strategy call is booked. Check your email and phone for confirmation. Here's everything you need to know before the call.</p>
+
+      <div class="ty-details">
+        <div class="ty-detail-row">
+          <div class="ty-detail-icon">📅</div>
+          <div class="ty-detail-text">
+            <strong id="ty-datetime">Tuesday, July 8 · 10:00 AM EST</strong>
+            <span>Strategy call via Zoom · 30 minutes</span>
+          </div>
+        </div>
+        <div class="ty-detail-row">
+          <div class="ty-detail-icon">📧</div>
+          <div class="ty-detail-text">
+            <strong>Confirmation sent to <span id="ty-email">your email</span></strong>
+            <span>Includes Zoom link, agenda, and calendar invite</span>
+          </div>
+        </div>
+        <div class="ty-detail-row">
+          <div class="ty-detail-icon">📱</div>
+          <div class="ty-detail-text">
+            <strong>SMS reminder 1 hour before</strong>
+            <span>We'll text you the Zoom link so you never miss it</span>
+          </div>
+        </div>
+        <div class="ty-detail-row">
+          <div class="ty-detail-icon">🎁</div>
+          <div class="ty-detail-text">
+            <strong>Free bonus: Custom ROI Report</strong>
+            <span>We'll prepare a personalized missed-call revenue analysis for your specific business before the call</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="ty-next-steps">
+        <div class="ty-ns-title">What happens next</div>
+        <ul class="ty-ns-list">
+          <li><div class="ty-ns-num">1</div><span><strong>Right now</strong> — Check your email for the Zoom link and calendar invite</span></li>
+          <li><div class="ty-ns-num">2</div><span><strong>24 hrs before</strong> — We'll send your personalized ROI analysis to review before the call</span></li>
+          <li><div class="ty-ns-num">3</div><span><strong>On the call</strong> — We'll demo Nexus live with your business type and answer every question</span></li>
+          <li><div class="ty-ns-num">4</div><span><strong>After the call</strong> — If it's a fit, we'll set you up and you'll be live within 24 hours</span></li>
+        </ul>
+      </div>
+
+      <p class="ty-share">Know another business owner who's tired of missing calls?</p>
+      <div class="share-btns">
+        <button class="share-btn" onclick="shareLink('text')">💬 Text a Friend</button>
+        <button class="share-btn" onclick="shareLink('facebook')">📘 Share on Facebook</button>
+        <button class="share-btn" onclick="shareLink('copy')">🔗 Copy Link</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── STATE ──
+let leadData = {};
+let selectedDate = null;
+let selectedTime = null;
+let calYear = 2025;
+let calMonth = 6; // July (0-indexed)
+const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+const DAYS = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+
+// ── PAGE ROUTING ──
+const progressMap = {1:25, 2:50, 3:75, 4:100};
+const labelMap = {1:'Step 1 of 4 — Lead Info', 2:'Step 2 of 4 — See the ROI', 3:'Step 3 of 4 — Book Your Call', 4:'Step 4 of 4 — Confirmed!'};
+
+function goToPage(n) {
+  // Validate page 1
+  if (n === 2) {
+    const biz = document.getElementById('lc-biztype').value;
+    const name = document.getElementById('lc-name').value.trim();
+    const email = document.getElementById('lc-email').value.trim();
+    if (!biz || !name || !email) {
+      alert('Please fill in your business type, name, and email to continue.');
+      return;
+    }
+    leadData.biz = biz;
+    leadData.name = name;
+    leadData.email = email;
+    leadData.phone = document.getElementById('lc-phone').value;
+    leadData.calls = document.getElementById('lc-calls').value || '150';
+
+    // Pre-fill VSL
+    document.getElementById('vsl-name').textContent = name + '!';
+
+    // Pre-fill ROI slider from call volume
+    const callMap = {'50':50,'150':150,'350':350,'750':750,'1500':1000};
+    const callVal = callMap[leadData.calls] || 150;
+    document.getElementById('callsSlider').value = callVal;
+    updateROI();
+  }
+
+  // All pages -> 3 passes
+  for (let i = 1; i <= 4; i++) {
+    document.getElementById('page' + i).classList.toggle('active', i === n);
+    const dot = document.getElementById('dot' + i);
+    dot.classList.remove('active','done');
+    if (i < n) dot.classList.add('done');
+    else if (i === n) dot.classList.add('active');
+  }
+  document.getElementById('progressFill').style.width = progressMap[n] + '%';
+  document.getElementById('stepLabel').textContent = labelMap[n];
+  window.scrollTo({top: 0, behavior: 'smooth'});
+}
+
+// ── ROI CALCULATOR ──
+function updateROI() {
+  const calls = parseInt(document.getElementById('callsSlider').value);
+  const missed = parseInt(document.getElementById('missedSlider').value);
+  const value = parseInt(document.getElementById('valueSlider').value);
+
+  document.getElementById('callsVal').textContent = calls;
+  document.getElementById('missedVal').textContent = missed + '%';
+  document.getElementById('valueVal').textContent = '$' + value.toLocaleString();
+
+  const missedCalls = Math.round(calls * missed / 100);
+  const lostRevMo = missedCalls * value * 0.3; // assume 30% convert
+  const lostRevYr = lostRevMo * 12;
+
+  document.getElementById('roi-missed').textContent = missedCalls;
+  document.getElementById('roi-lost').textContent = '$' + formatK(lostRevMo);
+  document.getElementById('roi-annual').textContent = '$' + formatK(lostRevYr);
+}
+function formatK(n) {
+  if (n >= 1000000) return (n/1000000).toFixed(1) + 'M';
+  if (n >= 1000) return Math.round(n/1000) + 'K';
+  return n.toLocaleString();
+}
+
+// ── VIDEO TOGGLE ──
+function toggleVideo(wrap) {
+  const inner = document.getElementById('videoInner');
+  const playBtn = document.getElementById('playBtn');
+  if (playBtn.textContent === '▶') {
+    playBtn.textContent = '⏸';
+    inner.querySelector('.vsl-video-label').textContent = 'Playing: How Nexus Fills Your Calendar';
+    wrap.style.border = '1px solid var(--cyan)';
+    wrap.style.boxShadow = '0 0 40px var(--cyan-glow)';
+  } else {
+    playBtn.textContent = '▶';
+    inner.querySelector('.vsl-video-label').textContent = 'Watch: How Nexus Fills Your Calendar';
+    wrap.style.border = '1px solid var(--border)';
+    wrap.style.boxShadow = 'none';
+  }
+}
+
+// ── CALENDAR ──
+function renderCal() {
+  document.getElementById('calMonth').textContent = MONTHS[calMonth] + ' ' + calYear;
+  const grid = document.getElementById('calGrid');
+  grid.innerHTML = '';
+
+  DAYS.forEach(d => {
+    const dn = document.createElement('div');
+    dn.className = 'cal-day-name';
+    dn.textContent = d;
+    grid.appendChild(dn);
+  });
+
+  const firstDay = new Date(calYear, calMonth, 1).getDay();
+  const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
+  const today = new Date();
+
+  for (let i = 0; i < firstDay; i++) {
+    const blank = document.createElement('div');
+    blank.className = 'cal-day empty';
+    grid.appendChild(blank);
+  }
+
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dayEl = document.createElement('div');
+    const thisDate = new Date(calYear, calMonth, d);
+    const dayOfWeek = thisDate.getDay();
+    const isPast = thisDate < new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+
+    if (isPast || isWeekend) {
+      dayEl.className = 'cal-day past';
+    } else {
+      dayEl.className = 'cal-day available';
+      dayEl.onclick = () => selectDate(d, thisDate);
+    }
+
+    if (selectedDate && selectedDate.getDate() === d && selectedDate.getMonth() === calMonth && selectedDate.getFullYear() === calYear) {
+      dayEl.className = 'cal-day selected';
+    }
+
+    dayEl.textContent = d;
+    grid.appendChild(dayEl);
+  }
+}
+
+function prevMonth() {
+  calMonth--;
+  if (calMonth < 0) { calMonth = 11; calYear--; }
+  renderCal();
+}
+function nextMonth() {
+  calMonth++;
+  if (calMonth > 11) { calMonth = 0; calYear++; }
+  renderCal();
+}
+
+function selectDate(d, dateObj) {
+  selectedDate = dateObj;
+  selectedTime = null;
+  renderCal();
+  renderSlots(dateObj);
+  document.getElementById('slotsSection').style.display = 'block';
+  document.getElementById('bookFormSection').style.display = 'none';
+  document.getElementById('selectedDateLabel').textContent = dateObj.toLocaleDateString('en-US', {weekday:'long', month:'long', day:'numeric'});
+  document.getElementById('slotsSection').scrollIntoView({behavior:'smooth', block:'nearest'});
+}
+
+function renderSlots(date) {
+  const slots = ['9:00 AM','9:30 AM','10:00 AM','10:30 AM','11:00 AM','11:30 AM','1:00 PM','1:30 PM','2:00 PM','2:30 PM','3:00 PM','3:30 PM','4:00 PM','4:30 PM'];
+  const taken = [1, 3, 6, 9]; // fake taken slots by index
+  const grid = document.getElementById('slotsGrid');
+  grid.innerHTML = '';
+  slots.forEach((t, i) => {
+    const s = document.createElement('div');
+    if (taken.includes(i)) {
+      s.className = 'slot taken';
+      s.textContent = t + ' ✗';
+    } else {
+      s.className = 'slot';
+      s.textContent = t;
+      s.onclick = () => selectTime(t, s);
+    }
+    grid.appendChild(s);
+  });
+}
+
+function selectTime(time, el) {
+  selectedTime = time;
+  document.querySelectorAll('.slot').forEach(s => s.classList.remove('selected'));
+  el.classList.add('selected');
+
+  const dateStr = selectedDate.toLocaleDateString('en-US', {weekday:'long', month:'long', day:'numeric', year:'numeric'});
+
+  // Pre-fill form from lead data
+  if (leadData.name) {
+    const parts = leadData.name.split(' ');
+    document.getElementById('book-fname').value = parts[0] || '';
+    document.getElementById('book-lname').value = parts.slice(1).join(' ') || '';
+  }
+  if (leadData.email) document.getElementById('book-email').value = leadData.email;
+  if (leadData.phone) document.getElementById('book-phone').value = leadData.phone;
+
+  document.getElementById('confirmSummary').innerHTML = `
+    <div class="cs-row"><span class="cs-key">📅 Date</span><span class="cs-val">${dateStr}</span></div>
+    <div class="cs-row"><span class="cs-key">⏰ Time</span><span class="cs-val">${time} Eastern</span></div>
+    <div class="cs-row"><span class="cs-key">📍 Format</span><span class="cs-val">Zoom Video Call · 30 min</span></div>
+    <div class="cs-row"><span class="cs-key">💰 Cost</span><span class="cs-val" style="color:var(--green)">Free</span></div>
+  `;
+  document.getElementById('bookFormSection').style.display = 'block';
+  document.getElementById('bookFormSection').scrollIntoView({behavior:'smooth', block:'nearest'});
+}
+
+function confirmBooking() {
+  const fname = document.getElementById('book-fname').value.trim();
+  const email = document.getElementById('book-email').value.trim();
+  if (!fname || !email || !selectedDate || !selectedTime) {
+    alert('Please complete all fields and select a date & time.');
+    return;
+  }
+  const dateStr = selectedDate.toLocaleDateString('en-US', {weekday:'long', month:'long', day:'numeric'});
+  document.getElementById('ty-name').textContent = fname;
+  document.getElementById('ty-datetime').textContent = dateStr + ' · ' + selectedTime + ' EST';
+  document.getElementById('ty-email').textContent = email;
+  goToPage(4);
+}
+
+// ── SHARE ──
+function shareLink(type) {
+  const url = window.location.href;
+  const msg = "I just booked a free AI receptionist demo — your business might be losing thousands in missed calls. Check it out:";
+  if (type === 'text') {
+    window.location.href = `sms:?body=${encodeURIComponent(msg + ' ' + url)}`;
+  } else if (type === 'facebook') {
+    window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`,'_blank');
+  } else if (type === 'copy') {
+    navigator.clipboard.writeText(url).then(() => alert('Link copied to clipboard!'));
+  }
+}
+
+// ── INIT ──
+document.addEventListener('DOMContentLoaded', () => {
+  renderCal();
+  updateROI();
+});
+</script>
+</body>
+</html>

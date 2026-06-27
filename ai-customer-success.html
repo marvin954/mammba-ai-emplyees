@@ -1,0 +1,814 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Retain AI — Customer Success Manager</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,400;0,600;0,700;0,900;1,400;1,700&family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap');
+
+:root {
+  --void: #070D14;
+  --deep: #0B1220;
+  --surface: #101E30;
+  --card: #162438;
+  --rim: #1E3248;
+  --teal: #00BFA5;
+  --teal-dim: rgba(0,191,165,0.11);
+  --teal-glow: rgba(0,191,165,0.38);
+  --gold: #FFB347;
+  --gold-dim: rgba(255,179,71,0.11);
+  --rose: #FF6B8A;
+  --rose-dim: rgba(255,107,138,0.11);
+  --sky: #48CAE4;
+  --sky-dim: rgba(72,202,228,0.11);
+  --snow: #EFF6FF;
+  --soft: #8BA4BE;
+  --mist: #4A6480;
+  --display: 'Fraunces', serif;
+  --body: 'Inter', sans-serif;
+  --mono: 'JetBrains Mono', monospace;
+}
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;overflow-x:hidden;max-width:100%;}
+body{background:var(--void);color:var(--snow);font-family:var(--body);line-height:1.6;overflow-x:hidden;max-width:100%;}
+
+body::after{content:'';position:fixed;inset:0;opacity:0.02;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");pointer-events:none;z-index:998;}
+
+/* ── NAV ── */
+nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:16px 52px;display:flex;align-items:center;justify-content:space-between;background:rgba(7,13,20,0.85);backdrop-filter:blur(20px);border-bottom:1px solid var(--rim);}
+.nav-logo{font-family:var(--display);font-size:1.4rem;font-weight:700;color:#fff;font-style:italic;}
+.nav-logo em{color:var(--teal);font-style:normal;}
+nav ul{list-style:none;display:flex;gap:32px;}
+nav ul a{color:var(--soft);text-decoration:none;font-size:0.875rem;font-weight:500;transition:color 0.2s;}
+nav ul a:hover{color:#fff;}
+.nav-cta{background:var(--teal);color:var(--void)!important;padding:9px 22px;border-radius:6px;font-weight:700!important;transition:opacity 0.2s!important;}
+.nav-cta:hover{opacity:0.85;}
+
+/* ── HERO ── */
+.hero{padding:130px 52px 100px;text-align:center;position:relative;overflow:hidden;}
+.hero-bg{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 30%,rgba(0,191,165,0.08) 0%,transparent 60%);pointer-events:none;}
+.hero-bg2{position:absolute;bottom:0;left:0;right:0;height:200px;background:linear-gradient(to bottom,transparent,var(--void));pointer-events:none;}
+
+.hero-inner{max-width:720px;margin:0 auto;position:relative;z-index:2;}
+.hero-badge{display:inline-flex;align-items:center;gap:8px;font-family:var(--mono);font-size:0.65rem;letter-spacing:0.14em;text-transform:uppercase;color:var(--teal);background:var(--teal-dim);border:1px solid rgba(0,191,165,0.22);padding:6px 16px;border-radius:20px;margin-bottom:28px;}
+.hb-dot{width:5px;height:5px;border-radius:50%;background:var(--gold);animation:hblink 2s ease-in-out infinite;}
+@keyframes hblink{0%,100%{opacity:1;}50%{opacity:0.2;}}
+
+h1{font-family:var(--display);font-size:clamp(3rem,6vw,5.5rem);font-weight:900;line-height:1.08;letter-spacing:-0.02em;margin-bottom:20px;color:#fff;}
+h1 em{color:var(--teal);font-style:italic;}
+h1 .g{color:var(--gold);}
+
+.hero-sub{font-size:1.1rem;color:#A8C0D4;max-width:540px;margin:0 auto 44px;line-height:1.78;}
+
+.hero-actions{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-bottom:60px;}
+.btn-teal{background:var(--teal);color:var(--void);border:none;padding:14px 32px;font-family:var(--body);font-size:0.95rem;font-weight:700;border-radius:8px;cursor:pointer;transition:box-shadow 0.2s,transform 0.15s;}
+.btn-teal:hover{box-shadow:0 0 28px var(--teal-glow);transform:translateY(-2px);}
+.btn-outline{background:transparent;color:var(--snow);border:1px solid var(--rim);padding:14px 32px;font-family:var(--body);font-size:0.95rem;font-weight:600;border-radius:8px;cursor:pointer;transition:border-color 0.2s,color 0.2s;}
+.btn-outline:hover{border-color:var(--teal);color:var(--teal);}
+
+.replaces-row{display:flex;flex-wrap:wrap;align-items:center;gap:10px;justify-content:center;}
+.replaces-lbl{font-family:var(--mono);font-size:0.63rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--mist);}
+.r-chip{display:inline-flex;align-items:center;gap:5px;font-size:0.78rem;font-weight:600;color:#A8C0D4;background:var(--card);border:1px solid var(--rim);padding:5px 12px;border-radius:20px;}
+.r-chip .x{color:var(--rose);}
+
+/* ── CUSTOMER JOURNEY DASHBOARD ── */
+.journey-section{padding:0 52px 100px;position:relative;z-index:2;overflow:hidden;}
+.journey-header{text-align:center;margin-bottom:48px;}
+.section-eyebrow{font-family:var(--mono);font-size:0.65rem;letter-spacing:0.14em;text-transform:uppercase;color:var(--teal);margin-bottom:12px;}
+h2{font-family:var(--display);font-size:clamp(2.4rem,4.5vw,3.8rem);font-weight:700;letter-spacing:-0.02em;line-height:1.1;margin-bottom:14px;color:#fff;}
+.sec-sub{font-size:0.98rem;color:#A8C0D4;line-height:1.7;}
+
+/* CUSTOMER CARDS */
+.customers-grid{display:grid;grid-template-columns:280px 1fr;gap:24px;max-width:1100px;margin:0 auto;align-items:start;}
+
+.customer-list{display:flex;flex-direction:column;gap:10px;}
+.cust-card{background:var(--card);border:1px solid var(--rim);border-radius:12px;padding:16px;cursor:pointer;transition:border-color 0.2s,background 0.2s;}
+.cust-card:hover,.cust-card.active{border-color:var(--teal);background:var(--surface);}
+.cust-top{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
+.cust-avatar{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;}
+.ca-a{background:linear-gradient(135deg,var(--teal),var(--sky));}
+.ca-b{background:linear-gradient(135deg,var(--gold),var(--rose));}
+.ca-c{background:linear-gradient(135deg,var(--rose),#c084fc);}
+.ca-d{background:linear-gradient(135deg,var(--sky),var(--teal));}
+.ca-e{background:linear-gradient(135deg,#a78bfa,var(--rose));}
+.cust-name{font-weight:700;font-size:0.88rem;color:#fff;}
+.cust-biz{font-size:0.72rem;color:var(--soft);}
+.cust-status{display:flex;align-items:center;gap:6px;}
+.status-dot{width:7px;height:7px;border-radius:50%;}
+.sd-active{background:var(--teal);}
+.sd-at-risk{background:var(--gold);}
+.sd-lapsed{background:var(--rose);}
+.sd-new{background:var(--sky);}
+.status-text{font-family:var(--mono);font-size:0.62rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;}
+.st-active{color:var(--teal);}
+.st-at-risk{color:var(--gold);}
+.st-lapsed{color:var(--rose);}
+.st-new{color:var(--sky);}
+
+/* TIMELINE PANEL */
+.timeline-panel{background:var(--deep);border:1px solid var(--rim);border-radius:16px;overflow:hidden;}
+.tp-header{background:var(--surface);padding:16px 22px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--rim);}
+.tp-dots span{width:9px;height:9px;border-radius:50%;display:inline-block;margin-right:3px;}
+.td-r{background:#FF5F57;}.td-y{background:#FFBD2E;}.td-g{background:#28C840;}
+.tp-title{font-family:var(--mono);font-size:0.72rem;color:#A8C0D4;font-weight:700;margin-left:4px;}
+.tp-cust-name{margin-left:auto;font-family:var(--mono);font-size:0.68rem;color:var(--teal);font-weight:700;}
+
+.timeline-body{padding:24px;}
+
+.tl-journey{position:relative;padding-left:32px;}
+.tl-journey::before{content:'';position:absolute;left:10px;top:4px;bottom:4px;width:2px;background:linear-gradient(to bottom,var(--teal),rgba(0,191,165,0.1));}
+
+.tl-event{position:relative;margin-bottom:24px;padding-bottom:24px;border-bottom:1px solid var(--rim);}
+.tl-event:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0;}
+.tl-bullet{position:absolute;left:-28px;top:4px;width:18px;height:18px;border-radius:50%;border:2px solid var(--rim);background:var(--surface);display:flex;align-items:center;justify-content:center;font-size:0.55rem;z-index:1;}
+.tb-done{border-color:var(--teal);background:var(--teal-dim);}
+.tb-next{border-color:var(--gold);background:var(--gold-dim);animation:tpulse 2s ease-in-out infinite;}
+@keyframes tpulse{0%,100%{box-shadow:0 0 0 0 rgba(255,179,71,0.4);}50%{box-shadow:0 0 0 6px rgba(255,179,71,0);}}
+.tb-future{border-color:var(--rim);}
+
+.tl-event-top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:6px;}
+.tl-event-title{font-weight:700;font-size:0.88rem;color:#fff;}
+.tl-event-time{font-family:var(--mono);font-size:0.62rem;color:var(--mist);white-space:nowrap;}
+.tl-event-type{font-family:var(--mono);font-size:0.6rem;padding:2px 7px;border-radius:4px;font-weight:700;margin-bottom:6px;display:inline-block;}
+.et-reminder{background:var(--teal-dim);color:var(--teal);border:1px solid rgba(0,191,165,0.2);}
+.et-followup{background:var(--sky-dim);color:var(--sky);border:1px solid rgba(72,202,228,0.2);}
+.et-review{background:var(--gold-dim);color:var(--gold);border:1px solid rgba(255,179,71,0.2);}
+.et-reengage{background:var(--rose-dim);color:var(--rose);border:1px solid rgba(255,107,138,0.2);}
+.et-survey{background:rgba(167,139,250,0.12);color:#c084fc;border:1px solid rgba(167,139,250,0.2);}
+.tl-event-msg{font-size:0.82rem;color:#A8C0D4;line-height:1.55;background:var(--card);border-left:2px solid var(--rim);padding:8px 12px;border-radius:0 6px 6px 0;font-style:italic;}
+.tl-event-result{display:flex;align-items:center;gap:6px;margin-top:6px;font-family:var(--mono);font-size:0.62rem;color:var(--teal);}
+
+/* ── MESSAGE GENERATOR ── */
+.msg-section{padding:96px 52px;background:var(--deep);border-top:1px solid var(--rim);border-bottom:1px solid var(--rim);overflow:hidden;}
+.msg-header{text-align:center;margin-bottom:52px;}
+.msg-wrap{display:grid;grid-template-columns:320px 1fr;gap:28px;max-width:1060px;margin:0 auto;align-items:start;}
+
+.msg-controls{display:flex;flex-direction:column;gap:14px;}
+.ctrl-label{font-family:var(--mono);font-size:0.62rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--soft);margin-bottom:6px;display:block;}
+.ctrl-select{width:100%;background:var(--card);border:1px solid var(--rim);border-radius:8px;color:#fff;font-family:var(--body);font-size:0.875rem;padding:10px 14px;outline:none;transition:border-color 0.2s;}
+.ctrl-select:focus{border-color:var(--teal);}
+.ctrl-select option{background:var(--card);}
+
+.msg-type-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.msg-type-btn{display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 8px;background:var(--card);border:1px solid var(--rim);border-radius:8px;cursor:pointer;font-size:0.75rem;font-weight:600;color:var(--soft);transition:all 0.15s;text-align:center;}
+.msg-type-btn .micon{font-size:1.2rem;}
+.msg-type-btn.active{border-color:var(--teal);background:var(--teal-dim);color:var(--teal);}
+.msg-type-btn:hover:not(.active){border-color:rgba(0,191,165,0.3);}
+
+.channel-row{display:flex;gap:6px;}
+.ch-btn{flex:1;text-align:center;padding:9px 6px;background:var(--card);border:1px solid var(--rim);border-radius:6px;font-size:0.75rem;font-weight:600;cursor:pointer;color:var(--soft);transition:all 0.15s;}
+.ch-btn.active{background:var(--teal-dim);border-color:var(--teal);color:var(--teal);}
+
+.ctrl-input{width:100%;background:var(--card);border:1px solid var(--rim);border-radius:8px;color:#fff;font-family:var(--body);font-size:0.875rem;padding:10px 14px;outline:none;transition:border-color 0.2s;}
+.ctrl-input:focus{border-color:var(--teal);}
+.ctrl-input::placeholder{color:var(--mist);}
+
+.gen-btn{width:100%;background:var(--teal);color:var(--void);border:none;border-radius:8px;padding:13px;font-family:var(--body);font-size:0.9rem;font-weight:700;cursor:pointer;transition:opacity 0.2s,transform 0.15s;display:flex;align-items:center;justify-content:center;gap:8px;}
+.gen-btn:hover{opacity:0.88;transform:translateY(-1px);}
+.gen-btn:disabled{opacity:0.4;cursor:not-allowed;transform:none;}
+
+/* OUTPUT */
+.msg-output{background:var(--void);border:1px solid var(--rim);border-radius:12px;overflow:hidden;}
+.out-header{background:var(--surface);padding:14px 20px;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--rim);}
+.odot{width:9px;height:9px;border-radius:50%;}
+.od-r{background:#FF5F57;}.od-y{background:#FFBD2E;}.od-g{background:#28C840;}
+.out-title{font-family:var(--mono);font-size:0.7rem;color:#A8C0D4;margin-left:4px;font-weight:700;}
+.out-badge{margin-left:auto;font-family:var(--mono);font-size:0.6rem;padding:3px 10px;border-radius:20px;font-weight:700;}
+.ob-email{background:var(--teal-dim);color:var(--teal);border:1px solid rgba(0,191,165,0.25);}
+.ob-sms{background:var(--gold-dim);color:var(--gold);border:1px solid rgba(255,179,71,0.25);}
+
+.out-body{padding:24px;min-height:300px;}
+.out-placeholder{display:flex;flex-direction:column;align-items:center;justify-content:center;height:260px;gap:12px;opacity:0.4;}
+.out-placeholder .icon{font-size:2.6rem;}
+.out-placeholder p{font-size:0.84rem;color:var(--soft);text-align:center;}
+
+.out-typing{display:none;align-items:center;gap:10px;padding:12px 0;}
+.out-typing.show{display:flex;}
+.otd{width:7px;height:7px;background:var(--teal);border-radius:50%;animation:otbounce 1.2s ease-in-out infinite;}
+.otd:nth-child(2){animation-delay:0.2s;}.otd:nth-child(3){animation-delay:0.4s;}
+@keyframes otbounce{0%,80%,100%{transform:scale(0.5);opacity:0.3;}40%{transform:scale(1);opacity:1;}}
+.out-typing-lbl{font-family:var(--mono);font-size:0.72rem;color:var(--teal);}
+
+.out-meta{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid var(--rim);}
+.out-from{font-family:var(--mono);font-size:0.66rem;color:#A8C0D4;}
+.out-from strong{color:#fff;}
+.out-sentiment{display:flex;align-items:center;gap:6px;font-family:var(--mono);font-size:0.62rem;color:var(--teal);}
+.sent-bar{width:56px;height:3px;background:var(--rim);border-radius:2px;overflow:hidden;}
+.sent-fill{height:100%;background:var(--teal);border-radius:2px;transition:width 0.8s ease;}
+
+.out-subject{font-family:var(--mono);font-size:0.76rem;font-weight:700;color:#A8C0D4;margin-bottom:6px;}
+.out-subject span{color:#fff;}
+.out-body-text{font-size:0.875rem;color:#A8C0D4;line-height:1.78;white-space:pre-wrap;display:none;}
+.out-body-text.show{display:block;}
+
+.out-actions{display:flex;gap:8px;padding:0 24px 20px;}
+.oact-btn{flex:1;background:var(--card);border:1px solid var(--rim);color:var(--soft);padding:8px;font-family:var(--body);font-size:0.75rem;font-weight:600;border-radius:6px;cursor:pointer;transition:all 0.15s;}
+.oact-btn:hover{border-color:var(--teal);color:var(--teal);}
+
+/* ── FEATURES ── */
+.feats-section{padding:96px 52px;overflow:hidden;}
+.feats-header{text-align:center;margin-bottom:56px;}
+.feats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--rim);border:1px solid var(--rim);border-radius:14px;overflow:hidden;max-width:1100px;margin:0 auto;}
+.feat-card{background:var(--deep);padding:32px 28px;transition:background 0.2s;}
+.feat-card:hover{background:var(--surface);}
+.feat-icon{font-size:1.5rem;margin-bottom:14px;}
+.feat-title{font-family:var(--body);font-size:1rem;font-weight:700;color:#fff;margin-bottom:8px;}
+.feat-desc{font-size:0.855rem;color:#A8C0D4;line-height:1.65;}
+.feat-stat{display:inline-block;font-family:var(--mono);font-size:0.6rem;color:var(--teal);background:var(--teal-dim);border:1px solid rgba(0,191,165,0.18);padding:3px 9px;border-radius:4px;margin-top:12px;font-weight:700;}
+
+/* ── METRICS ── */
+.metrics-section{background:var(--deep);border-top:1px solid var(--rim);border-bottom:1px solid var(--rim);padding:72px 52px;overflow:hidden;}
+.metrics-wrap{max-width:1000px;margin:0 auto;}
+.metrics-header{text-align:center;margin-bottom:48px;}
+.metrics-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--rim);border:1px solid var(--rim);border-radius:12px;overflow:hidden;}
+.metric-cell{background:var(--void);padding:28px 24px;text-align:center;}
+.metric-n{font-family:var(--display);font-size:3rem;font-weight:900;color:var(--teal);line-height:1;margin-bottom:6px;letter-spacing:-0.02em;}
+.metric-l{font-size:0.82rem;color:#A8C0D4;line-height:1.4;}
+
+/* ── PRICING ── */
+.price-section{padding:96px 52px;overflow:hidden;}
+.price-header{text-align:center;margin-bottom:52px;}
+.price-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;max-width:960px;margin:0 auto;}
+.price-card{background:var(--deep);border:1px solid var(--rim);border-radius:14px;padding:36px 28px;position:relative;transition:transform 0.2s;}
+.price-card:hover{transform:translateY(-4px);}
+.price-card.featured{border-color:var(--teal);background:linear-gradient(180deg,rgba(0,191,165,0.06) 0%,var(--deep) 60%);}
+.feat-tag{position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:var(--teal);color:var(--void);font-family:var(--mono);font-size:0.6rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;padding:4px 14px;border-radius:20px;white-space:nowrap;}
+.plan-name{font-family:var(--mono);font-size:0.65rem;letter-spacing:0.12em;text-transform:uppercase;color:#A8C0D4;margin-bottom:8px;}
+.plan-price{font-family:var(--display);font-size:3.4rem;font-weight:900;letter-spacing:-0.02em;line-height:1;margin-bottom:4px;color:#fff;}
+.plan-price sub{font-size:0.95rem;font-weight:400;color:var(--soft);font-family:var(--body);}
+.plan-tagline{font-size:0.83rem;color:#A8C0D4;margin-bottom:22px;padding-bottom:22px;border-bottom:1px solid var(--rim);}
+.plan-feats{list-style:none;margin-bottom:28px;display:flex;flex-direction:column;gap:9px;}
+.plan-feats li{font-size:0.855rem;color:#A8C0D4;display:flex;align-items:flex-start;gap:9px;}
+.plan-feats li::before{content:'✓';color:var(--teal);font-weight:800;flex-shrink:0;}
+
+/* ── CTA ── */
+.cta-section{padding:110px 52px;text-align:center;position:relative;overflow:hidden;}
+.cta-bg{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 60%,rgba(0,191,165,0.07) 0%,transparent 65%);pointer-events:none;}
+.cta-section h2{max-width:580px;margin:0 auto 16px;}
+.cta-sub{font-size:1rem;color:#A8C0D4;max-width:480px;margin:0 auto 44px;line-height:1.7;}
+
+/* ── FOOTER ── */
+footer{background:var(--deep);border-top:1px solid var(--rim);padding:44px 52px;display:flex;align-items:center;justify-content:space-between;}
+.footer-logo{font-family:var(--display);font-size:1.3rem;font-weight:700;color:#fff;font-style:italic;}
+.footer-logo em{color:var(--teal);font-style:normal;}
+.footer-links{display:flex;gap:26px;}
+.footer-links a{font-size:0.78rem;color:#A8C0D4;text-decoration:none;transition:color 0.2s;}
+.footer-links a:hover{color:var(--teal);}
+.footer-copy{font-family:var(--mono);font-size:0.68rem;color:var(--mist);}
+
+/* ── RESPONSIVE ── */
+@media(max-width:960px){
+  nav{padding:14px 20px;}nav ul{display:none;}
+  .hero{padding:110px 20px 80px;}
+  .journey-section{padding:0 20px 80px;}
+  .customers-grid{grid-template-columns:1fr;}
+  .msg-section,.feats-section,.metrics-section,.price-section,.cta-section{padding:72px 20px;}
+  .msg-wrap{grid-template-columns:1fr;}
+  .feats-grid{grid-template-columns:1fr;}
+  .metrics-grid{grid-template-columns:repeat(2,1fr);}
+  .price-grid{grid-template-columns:1fr;}
+  footer{flex-direction:column;gap:18px;text-align:center;padding:36px 20px;}
+  .footer-links{flex-wrap:wrap;justify-content:center;}
+  .hero-actions{flex-direction:column;align-items:center;}
+  .msg-type-grid{grid-template-columns:repeat(2,1fr);}
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo"><em>Retain</em>AI</div>
+  <ul>
+    <li><a href="#journey">Journey</a></li>
+    <li><a href="#composer">Composer</a></li>
+    <li><a href="#features">Features</a></li>
+    <li><a href="#pricing">Pricing</a></li>
+    <li><a href="#" class="nav-cta">Get Started</a></li>
+  </ul>
+</nav>
+
+<!-- ══ HERO ══ -->
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-bg2"></div>
+  <div class="hero-inner">
+    <div class="hero-badge"><span class="hb-dot"></span> AI Customer Success Manager</div>
+    <h1>Keeps customers <em>happy</em><br>while you <span class="g">grow.</span></h1>
+    <p class="hero-sub">RetainAI sends reminders, follows up after every job, requests reviews, and re-engages customers you haven't heard from — automatically, every single time.</p>
+
+    <div class="hero-actions">
+      <button class="btn-teal" onclick="document.getElementById('journey').scrollIntoView({behavior:'smooth'})">See the Customer Journey →</button>
+      <button class="btn-outline" onclick="document.getElementById('composer').scrollIntoView({behavior:'smooth'})">Try the Message Composer</button>
+    </div>
+
+    <div class="replaces-row">
+      <span class="replaces-lbl">Replaces</span>
+      <span class="r-chip"><span class="x">✕</span> Customer Success Rep</span>
+      <span class="r-chip"><span class="x">✕</span> Review Coordinator</span>
+      <span class="r-chip"><span class="x">✕</span> Retention Team</span>
+    </div>
+  </div>
+</section>
+
+<!-- ══ CUSTOMER JOURNEY DASHBOARD ══ -->
+<section class="journey-section" id="journey">
+  <div class="journey-header">
+    <div class="section-eyebrow">Live Customer Dashboard</div>
+    <h2>Every customer.<br>Every touchpoint.<br>All on autopilot.</h2>
+    <p class="sec-sub" style="max-width:480px;margin:0 auto;">Click any customer to see their automated journey in real time.</p>
+  </div>
+
+  <div class="customers-grid">
+    <div class="customer-list" id="customerList">
+      <!-- Rendered by JS -->
+    </div>
+
+    <div class="timeline-panel">
+      <div class="tp-header">
+        <div class="tp-dots"><span class="td-r"></span><span class="td-y"></span><span class="td-g"></span></div>
+        <span class="tp-title">Customer Journey</span>
+        <span class="tp-cust-name" id="tpCustName">Select a customer →</span>
+      </div>
+      <div class="timeline-body">
+        <div class="tl-journey" id="tlJourney">
+          <div style="text-align:center;padding:60px 0;opacity:0.4;">
+            <div style="font-size:2.5rem;margin-bottom:12px;">👆</div>
+            <p style="font-size:0.85rem;color:var(--soft);">Select a customer from the left<br>to see their automated journey.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ MESSAGE COMPOSER ══ -->
+<section class="msg-section" id="composer">
+  <div class="msg-header">
+    <div class="section-eyebrow">Message Composer</div>
+    <h2>Every message<br>personal. Never manual.</h2>
+    <p class="sec-sub" style="max-width:480px;margin:0 auto;">Watch RetainAI write the perfect follow-up, review request, or re-engagement message for any customer situation.</p>
+  </div>
+
+  <div class="msg-wrap">
+    <!-- CONTROLS -->
+    <div class="msg-controls">
+      <div>
+        <label class="ctrl-label">Business Type</label>
+        <select class="ctrl-select" id="msgBizType">
+          <option value="dental">Dental Practice</option>
+          <option value="hvac">HVAC / Plumbing</option>
+          <option value="realestate">Real Estate</option>
+          <option value="spa">Spa / Salon / Gym</option>
+          <option value="restaurant">Restaurant</option>
+          <option value="auto">Auto Shop</option>
+          <option value="medical">Medical / Chiro</option>
+          <option value="law">Law Firm</option>
+        </select>
+      </div>
+
+      <div>
+        <label class="ctrl-label">Message Type</label>
+        <div class="msg-type-grid">
+          <div class="msg-type-btn active" onclick="setMsgType(this,'reminder')"><span class="micon">⏰</span>Appointment Reminder</div>
+          <div class="msg-type-btn" onclick="setMsgType(this,'followup')"><span class="micon">🤝</span>Post-Service Follow-Up</div>
+          <div class="msg-type-btn" onclick="setMsgType(this,'review')"><span class="micon">⭐</span>Review Request</div>
+          <div class="msg-type-btn" onclick="setMsgType(this,'reengage')"><span class="micon">🔄</span>Win-Back / Re-engage</div>
+          <div class="msg-type-btn" onclick="setMsgType(this,'birthday')"><span class="micon">🎂</span>Birthday / Anniversary</div>
+          <div class="msg-type-btn" onclick="setMsgType(this,'survey')"><span class="micon">📋</span>Satisfaction Survey</div>
+        </div>
+      </div>
+
+      <div>
+        <label class="ctrl-label">Channel</label>
+        <div class="channel-row">
+          <div class="ch-btn active" onclick="setChannel(this,'sms')">💬 SMS</div>
+          <div class="ch-btn" onclick="setChannel(this,'email')">📧 Email</div>
+          <div class="ch-btn" onclick="setChannel(this,'both')">⚡ Both</div>
+        </div>
+      </div>
+
+      <div>
+        <label class="ctrl-label">Customer Name (optional)</label>
+        <input type="text" class="ctrl-input" id="msgCustName" placeholder="e.g. James Rodriguez" />
+      </div>
+
+      <div>
+        <label class="ctrl-label">Service / Context (optional)</label>
+        <input type="text" class="ctrl-input" id="msgContext" placeholder="e.g. AC tune-up, last visit 6 months ago..." />
+      </div>
+
+      <button class="gen-btn" id="msgGenBtn" onclick="generateMessage()">
+        <span>💬</span> Generate Message
+      </button>
+    </div>
+
+    <!-- OUTPUT -->
+    <div class="msg-output">
+      <div class="out-header">
+        <div class="odot od-r"></div><div class="odot od-y"></div><div class="odot od-g"></div>
+        <span class="out-title">Message Preview</span>
+        <span class="out-badge ob-sms" id="outBadge">SMS</span>
+      </div>
+      <div class="out-body">
+        <div class="out-placeholder" id="outPlaceholder">
+          <div class="icon">💬</div>
+          <p>Configure your message type and channel,<br>then click Generate to see RetainAI write it.</p>
+        </div>
+        <div class="out-typing" id="outTyping">
+          <div class="otd"></div><div class="otd"></div><div class="otd"></div>
+          <span class="out-typing-lbl">RetainAI is writing...</span>
+        </div>
+        <div id="outContent" style="display:none;">
+          <div class="out-meta">
+            <div class="out-from">From: <strong>RetainAI (on behalf of your business)</strong></div>
+            <div class="out-sentiment">
+              <span>Warmth</span>
+              <div class="sent-bar"><div class="sent-fill" id="sentFill" style="width:0%"></div></div>
+              <span id="sentVal">—</span>
+            </div>
+          </div>
+          <div class="out-subject" id="outSubject" style="display:none;"></div>
+          <div class="out-body-text" id="outBodyText"></div>
+        </div>
+      </div>
+      <div class="out-actions" id="outActions" style="display:none;">
+        <button class="oact-btn">📋 Copy</button>
+        <button class="oact-btn">📤 Send Now</button>
+        <button class="oact-btn">📅 Schedule</button>
+        <button class="oact-btn" onclick="generateMessage()">🔄 Regenerate</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ FEATURES ══ -->
+<section class="feats-section" id="features">
+  <div class="feats-header">
+    <div class="section-eyebrow">Everything Included</div>
+    <h2>One AI. The full<br>customer lifecycle.</h2>
+  </div>
+  <div class="feats-grid">
+    <div class="feat-card">
+      <div class="feat-icon">⏰</div>
+      <div class="feat-title">Appointment Reminders</div>
+      <div class="feat-desc">Automated SMS and email reminders at 48 hours, 24 hours, and 1 hour before every appointment. Reduce no-shows by up to 80% without lifting a finger.</div>
+      <span class="feat-stat">80% fewer no-shows</span>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon">⭐</div>
+      <div class="feat-title">Review Requests</div>
+      <div class="feat-desc">Sends a personalized review request 2 hours after every completed job. Routes happy customers to Google and Yelp. Unhappy ones get your private feedback form first.</div>
+      <span class="feat-stat">4.8× more reviews/month</span>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon">🤝</div>
+      <div class="feat-title">Post-Service Follow-Up</div>
+      <div class="feat-desc">Checks in after every service with a personal message, confirms satisfaction, and plants the seed for the next appointment — all automatically within 24 hours.</div>
+      <span class="feat-stat">31% rebooking increase</span>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon">🔄</div>
+      <div class="feat-title">Lapsed Customer Re-engagement</div>
+      <div class="feat-desc">Automatically identifies customers who haven't returned in 60, 90, or 180 days and sends a personalized win-back sequence with a compelling offer to bring them back.</div>
+      <span class="feat-stat">22% win-back rate</span>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon">🎂</div>
+      <div class="feat-title">Birthday & Anniversary Messages</div>
+      <div class="feat-desc">Sends a personal birthday message with a special offer on the right day, every year. Customers remember businesses that remember them — this builds loyalty money can't buy.</div>
+      <span class="feat-stat">Highest open rate of any message</span>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon">📊</div>
+      <div class="feat-title">Customer Health Scoring</div>
+      <div class="feat-desc">Tracks engagement, visit frequency, and spending patterns to score every customer as Active, At-Risk, or Lapsed — and triggers the right sequence automatically.</div>
+      <span class="feat-stat">Real-time churn alerts</span>
+    </div>
+  </div>
+</section>
+
+<!-- ══ METRICS ══ -->
+<section class="metrics-section">
+  <div class="metrics-wrap">
+    <div class="metrics-header">
+      <div class="section-eyebrow">The Results</div>
+      <h2>What businesses see<br>in the first 90 days.</h2>
+    </div>
+    <div class="metrics-grid">
+      <div class="metric-cell"><div class="metric-n">80%</div><div class="metric-l">Reduction in appointment no-shows</div></div>
+      <div class="metric-cell"><div class="metric-n">4.8×</div><div class="metric-l">More Google reviews per month</div></div>
+      <div class="metric-cell"><div class="metric-n">31%</div><div class="metric-l">Higher customer rebooking rate</div></div>
+      <div class="metric-cell"><div class="metric-n">22%</div><div class="metric-l">Lapsed customers reactivated</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ PRICING ══ -->
+<section class="price-section" id="pricing">
+  <div class="price-header">
+    <div class="section-eyebrow">Pricing</div>
+    <h2>Keep more of the<br>business you've already won.</h2>
+    <p class="sec-sub" style="max-width:440px;margin:0 auto;margin-top:10px;">One retention specialist that costs less than a single lost customer.</p>
+  </div>
+  <div class="price-grid">
+    <div class="price-card">
+      <div class="plan-name">Starter</div>
+      <div class="plan-price">$149<sub>/mo</sub></div>
+      <div class="plan-tagline">For small businesses with under 200 active customers</div>
+      <ul class="plan-feats">
+        <li>Up to 200 active customers</li>
+        <li>Appointment reminders</li>
+        <li>Post-service follow-up</li>
+        <li>Review requests (Google)</li>
+        <li>SMS + Email channels</li>
+        <li>Basic customer dashboard</li>
+      </ul>
+      <button class="btn-outline" style="width:100%;padding:11px;">Get Started</button>
+    </div>
+    <div class="price-card featured">
+      <div class="feat-tag">Most Popular</div>
+      <div class="plan-name">Growth</div>
+      <div class="plan-price">$297<sub>/mo</sub></div>
+      <div class="plan-tagline">Full retention suite for actively growing businesses</div>
+      <ul class="plan-feats">
+        <li>Unlimited customers</li>
+        <li>All Starter features</li>
+        <li>Lapsed customer re-engagement</li>
+        <li>Birthday & anniversary messages</li>
+        <li>Google + Yelp review routing</li>
+        <li>Customer health scoring</li>
+        <li>Win-back campaigns</li>
+        <li>Full analytics dashboard</li>
+      </ul>
+      <button class="btn-teal" style="width:100%;padding:11px;">Get Started</button>
+    </div>
+    <div class="price-card">
+      <div class="plan-name">Agency</div>
+      <div class="plan-price">Custom</div>
+      <div class="plan-tagline">White-label for agencies managing retention for multiple clients</div>
+      <ul class="plan-feats">
+        <li>All Growth features</li>
+        <li>Multi-client dashboard</li>
+        <li>White-label branding</li>
+        <li>Custom message templates per client</li>
+        <li>CRM integrations</li>
+        <li>API + webhook access</li>
+        <li>Dedicated support</li>
+      </ul>
+      <button class="btn-outline" style="width:100%;padding:11px;">Talk to Sales</button>
+    </div>
+  </div>
+</section>
+
+<!-- ══ CTA ══ -->
+<section class="cta-section">
+  <div class="cta-bg"></div>
+  <div class="section-eyebrow">Start Today</div>
+  <h2>The customers<br>you keep are your best<br>source of new revenue.</h2>
+  <p class="cta-sub">Join 1,900+ businesses that automated their retention and stopped losing customers they already earned.</p>
+  <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
+    <button class="btn-teal" style="font-size:1rem;padding:15px 34px;">Start Free Trial — 14 Days</button>
+    <button class="btn-outline" style="font-size:1rem;padding:15px 34px;" onclick="document.getElementById('composer').scrollIntoView({behavior:'smooth'})">Try the Composer</button>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-logo"><em>Retain</em>AI</div>
+  <div class="footer-links">
+    <a href="#">Features</a><a href="#">Pricing</a><a href="#">Integrations</a><a href="#">Blog</a><a href="#">Privacy</a>
+  </div>
+  <div class="footer-copy">© 2025 RetainAI · All rights reserved</div>
+</footer>
+
+<script>
+// ══ CUSTOMER JOURNEYS ══
+const customers = [
+  {
+    name:'Maria Gonzalez', biz:'Bright Smile Dental', avatar:'ca-a', emoji:'👩',
+    status:'active', statusClass:'sd-active', statusText:'st-active', statusLabel:'Active',
+    events:[
+      {done:true, type:'et-reminder', typeLabel:'REMINDER', title:'Appointment Reminder Sent', time:'Yesterday · 9:00 AM', msg:'"Hi Maria! Just a reminder — your dental cleaning is tomorrow at 2:30 PM. Reply CONFIRM to hold your spot. See you soon! 😊"', result:'✓ Opened · Replied CONFIRM'},
+      {done:true, type:'et-followup', typeLabel:'FOLLOW-UP', title:'Post-Visit Follow-Up', time:'Today · 4:00 PM', msg:'"Hi Maria, hope your cleaning went well! Dr. Chen mentioned you were due for X-rays — want to schedule those now while it\'s fresh? Takes just 10 mins."', result:'✓ Sent · Awaiting reply'},
+      {done:false, type:'et-review', typeLabel:'REVIEW REQUEST', title:'Google Review Request', time:'Tomorrow · 10:00 AM', msg:'"Maria, thanks for coming in! If we made you smile today, a quick Google review would mean the world to us. [5-star link] Takes 30 seconds!"', result:''},
+      {done:false, type:'et-survey', typeLabel:'SURVEY', title:'Satisfaction Check-In', time:'In 3 days', msg:'"Quick question Maria — on a scale of 1-10, how happy are you with your care? Your honest feedback helps us improve."', result:''}
+    ]
+  },
+  {
+    name:'James Rodriguez', biz:'CoolAir HVAC', avatar:'ca-b', emoji:'👨',
+    status:'at-risk', statusClass:'sd-at-risk', statusText:'st-at-risk', statusLabel:'At Risk',
+    events:[
+      {done:true, type:'et-followup', typeLabel:'FOLLOW-UP', title:'Post-Service Follow-Up Sent', time:'2 weeks ago', msg:'"Hi James! Hope the AC tune-up is keeping you cool 🌡️ Everything running smoothly? Let us know if anything feels off — we\'ll be right over."', result:'✓ Delivered · No reply'},
+      {done:true, type:'et-review', typeLabel:'REVIEW REQUEST', title:'Review Request Sent', time:'1 week ago', msg:'"James, we hope the AC is doing its job! If we kept you cool, a quick Google review would really help our small team. [Link]"', result:'✓ Opened · No review yet'},
+      {done:false, type:'et-reengage', typeLabel:'RE-ENGAGE', title:'At-Risk Win-Back Sequence', time:'Tomorrow · 11:00 AM', msg:'"James, summer\'s here and AC season is in full swing. Book your seasonal check now and get 15% off — locked in just for you. [Schedule]"', result:''},
+      {done:false, type:'et-reengage', typeLabel:'RE-ENGAGE', title:'Final Re-engagement Attempt', time:'In 5 days', msg:'"Last chance for your summer AC special, James. Slots are filling fast. Reply BOOK or click here — we\'ll take care of the rest."', result:''}
+    ]
+  },
+  {
+    name:'Priya Patel', biz:'Serenity Spa', avatar:'ca-c', emoji:'👩',
+    status:'lapsed', statusClass:'sd-lapsed', statusText:'st-lapsed', statusLabel:'Lapsed',
+    events:[
+      {done:true, type:'et-followup', typeLabel:'FOLLOW-UP', title:'Post-Service Message', time:'4 months ago', msg:'"Priya, hope your massage left you feeling amazing ✨ You deserve it! Book your next session within 30 days and save 10%."', result:'✓ Read · No booking'},
+      {done:true, type:'et-reengage', typeLabel:'RE-ENGAGE', title:'60-Day Re-engagement', time:'2 months ago', msg:'"We miss you, Priya! It\'s been a while since your last visit. Your favorite Swedish massage is ready — and so are we. Book now?"', result:'✓ Clicked · Didn\'t book'},
+      {done:true, type:'et-reengage', typeLabel:'RE-ENGAGE', title:'90-Day Win-Back', time:'1 month ago', msg:'"Priya, we\'ve reserved a 20% loyalty discount just for you — valid through end of month. This is our way of saying we\'d love to have you back."', result:'✓ Opened · No response'},
+      {done:false, type:'et-reengage', typeLabel:'RE-ENGAGE', title:'Final Win-Back Offer', time:'Sending now', msg:'"Last message from us, Priya — we\'re sending your 25% VIP offer today. If this isn\'t a good time, no worries at all. We\'ll be here when you\'re ready 💆"', result:''}
+    ]
+  },
+  {
+    name:'Carlos Mendez', biz:'Peak Fitness', avatar:'ca-d', emoji:'👨',
+    status:'new', statusClass:'sd-new', statusText:'st-new', statusLabel:'New Customer',
+    events:[
+      {done:true, type:'et-followup', typeLabel:'WELCOME', title:'New Member Welcome Sent', time:'Today · 9:00 AM', msg:'"Welcome to Peak Fitness, Carlos! 💪 Your first session is booked for Thursday at 7 AM. We\'ve assigned you trainer Mike — he\'ll reach out today to say hi."', result:'✓ Read · Thumbs up reply'},
+      {done:false, type:'et-reminder', typeLabel:'REMINDER', title:'First Session Reminder', time:'Wednesday · 6:00 PM', msg:'"Carlos, big day tomorrow! Your first session with Mike is at 7 AM. Wear comfortable clothes, bring water, and arrive 5 mins early. You\'ve got this! 🏋️"', result:''},
+      {done:false, type:'et-followup', typeLabel:'CHECK-IN', title:'Post-First-Session Check-In', time:'Thursday · 2:00 PM', msg:'"How\'d your first session go, Carlos?! Mike said you crushed it. How are you feeling? Let us know and we\'ll book your next session around your schedule."', result:''},
+      {done:false, type:'et-review', typeLabel:'REVIEW REQUEST', title:'Week 1 Review Request', time:'Next Monday', msg:'"Carlos, one week in — how\'s it going? If Peak Fitness is already making a difference, a quick Google review would mean a lot to our team. [Link] 🙏"', result:''}
+    ]
+  },
+  {
+    name:'Sandra Lee', biz:'Bloom Dental', avatar:'ca-e', emoji:'👩',
+    status:'active', statusClass:'sd-active', statusText:'st-active', statusLabel:'Active',
+    events:[
+      {done:true, type:'et-followup', typeLabel:'FOLLOW-UP', title:'Crown Procedure Follow-Up', time:'3 days ago', msg:'"Sandra, checking in on your new crown! Any sensitivity or discomfort? Let us know and Dr. Mills will call you directly. Hope you\'re healing well 😊"', result:'✓ Replied: "Feeling great, thank you!"'},
+      {done:true, type:'et-review', typeLabel:'REVIEW REQUEST', title:'Google Review Sent', time:'2 days ago', msg:'"So glad you\'re feeling great, Sandra! If you\'re happy with your care, would you mind leaving us a quick review? It takes 30 seconds and helps so much. [5-star link]"', result:'✓ 5-star review left on Google'},
+      {done:false, type:'et-reminder', typeLabel:'REMINDER', title:'6-Month Cleaning Reminder', time:'In 5 months', msg:'"Sandra, time flies! Your 6-month cleaning is coming up. We\'ll reach out to book you in — or click here to grab your preferred time now."', result:''},
+      {done:false, type:'et-survey', typeLabel:'ANNUAL CHECK-IN', title:'Annual Satisfaction Survey', time:'In 6 months', msg:'"Sandra, you\'ve been with us for a year! We\'d love 2 minutes of your time to share how we\'re doing — and to say thank you with a special gift inside."', result:''}
+    ]
+  }
+];
+
+function renderCustomers() {
+  const list = document.getElementById('customerList');
+  list.innerHTML = '';
+  customers.forEach((c, i) => {
+    const card = document.createElement('div');
+    card.className = 'cust-card' + (i === 0 ? ' active' : '');
+    card.innerHTML = `
+      <div class="cust-top">
+        <div class="cust-avatar ${c.avatar}">${c.emoji}</div>
+        <div>
+          <div class="cust-name">${c.name}</div>
+          <div class="cust-biz">${c.biz}</div>
+        </div>
+      </div>
+      <div class="cust-status">
+        <div class="status-dot ${c.statusClass}"></div>
+        <span class="status-text ${c.statusText}">${c.statusLabel}</span>
+      </div>`;
+    card.onclick = () => selectCustomer(i, card);
+    list.appendChild(card);
+  });
+  renderTimeline(0);
+}
+
+function selectCustomer(idx, card) {
+  document.querySelectorAll('.cust-card').forEach(c => c.classList.remove('active'));
+  card.classList.add('active');
+  renderTimeline(idx);
+}
+
+function renderTimeline(idx) {
+  const c = customers[idx];
+  document.getElementById('tpCustName').textContent = c.name;
+  const journey = document.getElementById('tlJourney');
+  journey.innerHTML = '';
+
+  c.events.forEach(ev => {
+    const item = document.createElement('div');
+    item.className = 'tl-event';
+    const bulletClass = ev.done ? 'tb-done' : (ev === c.events.find(e => !e.done) ? 'tb-next' : 'tb-future');
+    const icon = ev.done ? '✓' : (bulletClass === 'tb-next' ? '→' : '○');
+    item.innerHTML = `
+      <div class="tl-bullet ${bulletClass}">${icon}</div>
+      <div class="tl-event-top">
+        <div class="tl-event-title">${ev.title}</div>
+        <div class="tl-event-time">${ev.time}</div>
+      </div>
+      <span class="tl-event-type ${ev.type}">${ev.typeLabel}</span>
+      <div class="tl-event-msg">${ev.msg}</div>
+      ${ev.result ? `<div class="tl-event-result">✓ ${ev.result}</div>` : ''}`;
+    journey.appendChild(item);
+  });
+}
+
+// ══ MESSAGE GENERATOR ══
+let msgType = 'reminder';
+let msgChannel = 'sms';
+
+function setMsgType(el, t) {
+  msgType = t;
+  document.querySelectorAll('.msg-type-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+}
+function setChannel(el, ch) {
+  msgChannel = ch;
+  document.querySelectorAll('.ch-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  const badge = document.getElementById('outBadge');
+  badge.className = 'out-badge ' + (ch === 'email' ? 'ob-email' : 'ob-sms');
+  badge.textContent = ch.toUpperCase();
+}
+
+async function generateMessage() {
+  const biz = document.getElementById('msgBizType').value;
+  const custName = document.getElementById('msgCustName').value.trim() || 'the customer';
+  const context = document.getElementById('msgContext').value.trim();
+  const btn = document.getElementById('msgGenBtn');
+
+  const bizMap = {
+    dental:'dental practice',hvac:'HVAC/plumbing company',realestate:'real estate agency',
+    spa:'spa or salon',restaurant:'restaurant',auto:'auto shop',medical:'medical or chiropractic office',law:'law firm'
+  };
+  const typeMap = {
+    reminder:'appointment reminder (send 24h before their scheduled appointment)',
+    followup:'post-service follow-up check-in (send same day or next day after service was completed)',
+    review:'review request for Google or Yelp (send 2-4 hours after service completion)',
+    reengage:'win-back/re-engagement message for a customer who hasn\'t returned in 3-6 months',
+    birthday:'birthday or anniversary message with a special offer',
+    survey:'customer satisfaction survey request'
+  };
+  const chMap = {
+    sms:'SMS text message (under 160 characters — conversational, warm, no fluff)',
+    email:'email (subject line first formatted as "Subject: ...", then body — under 150 words, personal and warm)',
+    both:'both an SMS version (under 160 chars) AND an email version (subject + body). Label each clearly.'
+  };
+
+  btn.disabled = true;
+  btn.innerHTML = '<span>⏳</span> Writing...';
+
+  document.getElementById('outPlaceholder').style.display = 'none';
+  document.getElementById('outContent').style.display = 'none';
+  document.getElementById('outBodyText').classList.remove('show');
+  document.getElementById('outTyping').classList.add('show');
+  document.getElementById('outActions').style.display = 'none';
+
+  const systemPrompt = `You are RetainAI, an expert customer retention copywriter for local service businesses.
+Write warm, genuine, personalized messages that sound like they come from a real person who cares — not a robot.
+Never use: "I hope this message finds you well", "Just checking in", "Per our records".
+Always use: customer's name, specific service reference, and a clear but soft call to action.
+Be brief. Be human. Be warm.
+Output ONLY the message content. No labels, preamble, or meta-commentary unless writing both SMS and email (label each clearly).`;
+
+  const userPrompt = `Business type: ${bizMap[biz]}
+Customer name: ${custName}
+Message type: ${typeMap[msgType]}
+Channel: ${chMap[msgChannel]}
+${context ? 'Additional context: ' + context : ''}
+Write the message now.`;
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-6',max_tokens:1000,
+        system:systemPrompt,
+        messages:[{role:'user',content:userPrompt}]
+      })
+    });
+    const data = await res.json();
+    const raw = data.content?.[0]?.text || 'Unable to generate. Please try again.';
+
+    let subject = '';
+    let body = raw;
+    if (msgChannel === 'email' && raw.includes('Subject:')) {
+      const lines = raw.split('\n');
+      const sLine = lines.find(l => l.trim().startsWith('Subject:'));
+      if (sLine) {
+        subject = sLine.replace('Subject:','').trim();
+        body = lines.filter(l => !l.trim().startsWith('Subject:')).join('\n').trim();
+      }
+    }
+
+    document.getElementById('outTyping').classList.remove('show');
+    document.getElementById('outContent').style.display = 'block';
+
+    const subEl = document.getElementById('outSubject');
+    if (subject) {
+      subEl.innerHTML = `Subject: <span>${subject}</span>`;
+      subEl.style.display = 'block';
+    } else { subEl.style.display = 'none'; }
+
+    const bodyEl = document.getElementById('outBodyText');
+    bodyEl.textContent = body;
+    bodyEl.classList.add('show');
+    document.getElementById('outActions').style.display = 'flex';
+
+    const score = 85 + Math.floor(Math.random() * 13);
+    document.getElementById('sentFill').style.width = score + '%';
+    document.getElementById('sentVal').textContent = score + '%';
+
+  } catch(e) {
+    document.getElementById('outTyping').classList.remove('show');
+    document.getElementById('outPlaceholder').style.display = 'flex';
+    document.getElementById('outPlaceholder').querySelector('p').textContent = 'Connection error. Please try again.';
+  }
+
+  btn.disabled = false;
+  btn.innerHTML = '<span>💬</span> Generate Message';
+}
+
+document.addEventListener('DOMContentLoaded', renderCustomers);
+</script>
+</body>
+</html>

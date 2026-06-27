@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>MAMMBA AI Employees™ — Hire Your First AI Employee Today</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;overflow-x:hidden}
+body{background:#fff;color:#0A1628;font-family:'Inter',system-ui,sans-serif;line-height:1.6;-webkit-font-smoothing:antialiased}
+:root{--blue:#2563EB;--blue-dk:#1D4ED8;--blue-lt:#EFF6FF;--blue-mid:#DBEAFE;--navy:#0A1628;--body:#374151;--muted:#6B7280;--border:#E5E7EB;--border2:#D1D5DB;--bg:#F9FAFB;--pad:clamp(20px,5vw,80px);--max:1160px}
+.container{max-width:var(--max);margin:0 auto;padding:0 var(--pad)}
+section{padding:96px var(--pad);overflow:hidden}
+.slabel{font-size:0.72rem;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--blue);margin-bottom:12px;display:block}
+h1{font-size:clamp(2rem,4.5vw,3.2rem);font-weight:700;line-height:1.15;letter-spacing:-0.02em;color:var(--navy)}
+h2{font-size:clamp(1.6rem,3.5vw,2.4rem);font-weight:700;line-height:1.2;letter-spacing:-0.015em;color:var(--navy)}
+h3{font-size:1.05rem;font-weight:600;line-height:1.3;color:var(--navy)}
+p{color:var(--body);line-height:1.7}
+.btn-blue{display:inline-block;background:var(--blue);color:#fff;padding:12px 24px;border-radius:8px;font-size:0.9rem;font-weight:600;text-decoration:none;border:none;cursor:pointer;transition:background .15s,transform .1s}
+.btn-blue:hover{background:var(--blue-dk);transform:translateY(-1px)}
+.btn-white{display:inline-block;background:#fff;color:var(--navy);padding:12px 24px;border-radius:8px;font-size:0.9rem;font-weight:600;text-decoration:none;border:1.5px solid var(--border2);cursor:pointer;transition:border-color .15s,color .15s}
+.btn-white:hover{border-color:var(--blue);color:var(--blue)}
+.btn-outline{display:inline-block;background:transparent;color:var(--blue);padding:12px 24px;border-radius:8px;font-size:0.9rem;font-weight:600;text-decoration:none;border:1.5px solid var(--blue);cursor:pointer;transition:background .15s}
+.btn-outline:hover{background:var(--blue-lt)}
+
+/* NAV */
+nav{position:fixed;top:0;left:0;right:0;z-index:200;height:60px;display:flex;align-items:center;justify-content:space-between;padding:0 var(--pad);background:rgba(255,255,255,.95);backdrop-filter:blur(12px);border-bottom:1px solid var(--border)}
+.nav-logo{font-size:1.15rem;font-weight:700;color:var(--navy);text-decoration:none}
+.nav-logo span{color:var(--blue)}
+nav ul{list-style:none;display:flex;gap:28px;align-items:center}
+nav ul a{color:var(--body);text-decoration:none;font-size:.875rem;font-weight:500;transition:color .15s;cursor:pointer}
+nav ul a:hover{color:var(--blue)}
+.nav-cta{background:var(--blue);color:#fff!important;padding:8px 18px;border-radius:7px;font-weight:600!important}
+.nav-cta:hover{background:var(--blue-dk)!important}
+.hbg{display:none;flex-direction:column;gap:5px;background:none;border:none;cursor:pointer;padding:6px}
+.hbg span{display:block;width:22px;height:2px;background:var(--navy);border-radius:2px;transition:all .2s}
+.hbg.open span:nth-child(1){transform:translateY(7px) rotate(45deg)}
+.hbg.open span:nth-child(2){opacity:0}
+.hbg.open span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
+.mob-nav{display:none;position:fixed;top:60px;left:0;right:0;background:#fff;border-bottom:1px solid var(--border);padding:16px var(--pad) 24px;flex-direction:column;z-index:199}
+.mob-nav.open{display:flex}
+.mob-nav a{color:var(--body);text-decoration:none;font-size:.95rem;font-weight:500;padding:13px 0;border-bottom:1px solid var(--border);display:block;cursor:pointer}
+.mob-nav a:last-child{margin-top:14px;border:none;background:var(--blue);color:#fff;text-align:center;padding:13px;border-radius:8px;font-weight:600}
+
+/* HERO */
+.hero{padding:120px var(--pad) 80px;text-align:center}
+.badge{display:inline-flex;align-items:center;gap:7px;background:var(--blue-lt);border:1px solid var(--blue-mid);color:var(--blue);font-size:.72rem;font-weight:600;padding:5px 14px;border-radius:20px;margin-bottom:24px}
+.badge-dot{width:6px;height:6px;border-radius:50%;background:#10B981;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.hero h1{max-width:700px;margin:0 auto 14px}
+.hero h1 span{color:var(--blue)}
+.hero-sub{font-size:1.05rem;color:var(--muted);max-width:500px;margin:0 auto 36px}
+.hero-btns{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-bottom:52px}
+.counters{display:grid;grid-template-columns:repeat(6,1fr);gap:0;border:1px solid var(--border);border-radius:12px;overflow:hidden;max-width:840px;margin:0 auto;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+.ctr{padding:18px 10px;text-align:center;border-right:1px solid var(--border);background:#fff}
+.ctr:last-child{border-right:none}
+.ctr-n{display:block;font-size:1.35rem;font-weight:700;color:var(--blue);line-height:1;margin-bottom:4px}
+.ctr-l{font-size:.63rem;color:var(--muted);line-height:1.3}
+
+/* WHAT */
+.what{background:var(--bg)}
+.what-inner{max-width:var(--max);margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:start}
+.what-list{list-style:none;display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:24px}
+.what-list li{display:flex;align-items:center;gap:9px;font-size:.855rem;font-weight:500;background:#fff;border:1px solid var(--border);padding:10px 13px;border-radius:8px;color:var(--navy)}
+.what-list li::before{content:'✓';color:var(--blue);font-weight:700;flex-shrink:0}
+.what-card{background:#fff;border:1px solid var(--border);border-radius:12px;padding:28px;box-shadow:0 1px 4px rgba(0,0,0,.04)}
+.what-quote{font-size:1.05rem;font-weight:600;color:var(--navy);line-height:1.5;margin-bottom:12px}
+.what-quote em{color:var(--blue);font-style:normal}
+.stat-row{display:grid;grid-template-columns:1fr 1fr 1fr;border-top:1px solid var(--border);margin-top:20px;padding-top:20px}
+.stat{text-align:center}
+.stat+.stat{border-left:1px solid var(--border)}
+.stat-n{font-size:1.6rem;font-weight:700;color:var(--blue);line-height:1}
+.stat-l{font-size:.7rem;color:var(--muted);margin-top:3px}
+
+/* WORKFORCE */
+.wf-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;max-width:var(--max);margin:0 auto}
+.wf-hd{text-align:center;max-width:540px;margin:0 auto 48px}
+.ec{background:#fff;border:1px solid var(--border);border-radius:12px;padding:28px;cursor:pointer;transition:border-color .2s,box-shadow .2s,transform .15s;position:relative}
+.ec:hover{border-color:var(--blue);box-shadow:0 4px 16px rgba(37,99,235,.1);transform:translateY(-2px)}
+.ec-role{font-size:.68rem;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--blue);margin-bottom:12px}
+.ec-icon{font-size:1.7rem;margin-bottom:10px;display:block}
+.ec h3{margin-bottom:5px}
+.ec-tag{font-size:.82rem;color:var(--muted);margin-bottom:14px;line-height:1.55}
+.ec-feats{list-style:none;display:flex;flex-direction:column;gap:6px;margin-bottom:16px}
+.ec-feats li{font-size:.83rem;color:var(--body);display:flex;align-items:center;gap:7px}
+.ec-feats li::before{content:'→';color:var(--blue);font-size:.78rem;flex-shrink:0}
+.ec-replaces{border-top:1px solid var(--border);padding-top:14px}
+.ec-rlbl{font-size:.65rem;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);margin-bottom:7px}
+.ec-chips{display:flex;flex-wrap:wrap;gap:5px}
+.ec-chip{font-size:.7rem;color:var(--body);background:var(--bg);border:1px solid var(--border);padding:3px 9px;border-radius:4px}
+.ec-cta{display:block;margin-top:14px;font-size:.8rem;font-weight:600;color:var(--blue)}
+.ec:hover .ec-cta{text-decoration:underline}
+
+/* VS */
+.vs{background:var(--bg)}
+.vs-hd{text-align:center;max-width:480px;margin:0 auto 44px}
+.vs-scroll{overflow-x:auto;border-radius:12px;border:1px solid var(--border);max-width:800px;margin:0 auto}
+.vs-table{width:100%;border-collapse:collapse;min-width:460px;background:#fff}
+.vs-table th{padding:13px 20px;font-size:.68rem;font-weight:600;letter-spacing:.07em;text-transform:uppercase;text-align:left;border-bottom:1px solid var(--border);background:var(--bg)}
+th.t0{color:var(--muted)}th.t1{color:#DC2626}th.t2{color:var(--blue)}
+.vs-table td{padding:12px 20px;font-size:.855rem;border-bottom:1px solid var(--border)}
+.vs-table tr:last-child td{border-bottom:none}
+td.t0{color:var(--muted);font-weight:500;background:var(--bg)}
+td.t1{color:#374151}td.t2{color:var(--navy);font-weight:600}
+.chk{color:#10B981;margin-right:4px}.xmk{color:#DC2626;margin-right:4px}
+.vs-note{text-align:center;margin-top:16px;font-size:.8rem;color:var(--muted);max-width:800px;margin-left:auto;margin-right:auto}
+.vs-note strong{color:var(--navy)}
+
+/* PRICING */
+.price-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;max-width:var(--max);margin:0 auto}
+.price-hd{text-align:center;max-width:500px;margin:0 auto 48px}
+.pc{background:#fff;border:1px solid var(--border);border-radius:12px;padding:32px 24px;position:relative;transition:box-shadow .2s,transform .15s}
+.pc:hover{box-shadow:0 4px 16px rgba(0,0,0,.07);transform:translateY(-2px)}
+.pc.featured{border:2px solid var(--blue);background:var(--blue-lt)}
+.pop{position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:var(--blue);color:#fff;font-size:.62rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:4px 14px;border-radius:20px;white-space:nowrap}
+.pc-tier{font-size:.65rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:4px}
+.pc-name{font-size:1rem;font-weight:700;color:var(--navy);margin-bottom:3px}
+.pc-sub{font-size:.77rem;color:var(--muted);margin-bottom:18px}
+.pc-price{font-size:2.6rem;font-weight:700;color:var(--navy);letter-spacing:-.03em;line-height:1;margin-bottom:2px}
+.pc-price sub{font-size:.85rem;font-weight:500;color:var(--muted)}
+.pc-setup{font-size:.72rem;color:var(--muted);margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid var(--border)}
+.pc-feats{list-style:none;display:flex;flex-direction:column;gap:9px;margin-bottom:24px}
+.pc-feats li{font-size:.835rem;color:var(--body);display:flex;align-items:flex-start;gap:7px}
+.pc-feats li::before{content:'✓';color:var(--blue);font-weight:700;flex-shrink:0;margin-top:1px}
+
+/* HOW */
+.how{background:var(--bg)}
+.how-hd{text-align:center;max-width:480px;margin:0 auto 48px}
+.how-steps{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;max-width:820px;margin:0 auto 40px}
+.hs{text-align:center;padding:0 10px}
+.hs-n{width:44px;height:44px;border-radius:50%;background:var(--blue);color:#fff;display:flex;align-items:center;justify-content:center;font-size:.95rem;font-weight:700;margin:0 auto 14px}
+.hs-t{font-size:.95rem;font-weight:600;color:var(--navy);margin-bottom:6px}
+.hs-d{font-size:.83rem;color:var(--muted);line-height:1.6}
+
+/* INDUSTRIES */
+.ind-hd{text-align:center;max-width:480px;margin:0 auto 32px}
+.ind-grid{display:flex;flex-wrap:wrap;gap:9px;justify-content:center;max-width:720px;margin:0 auto}
+.ind-chip{display:inline-flex;align-items:center;gap:6px;padding:9px 15px;background:var(--bg);border:1px solid var(--border);border-radius:8px;font-size:.83rem;font-weight:500;color:var(--navy);transition:border-color .15s,background .15s}
+.ind-chip:hover{border-color:var(--blue);background:var(--blue-lt)}
+
+/* CTA BOTTOM */
+.cta-sec{background:var(--navy);padding:96px var(--pad);text-align:center}
+.cta-sec h2{color:#fff;max-width:520px;margin:0 auto 14px}
+.cta-sec h2 span{color:#60A5FA}
+.cta-sub{color:#94A3B8;max-width:420px;margin:0 auto 32px;line-height:1.75}
+.cta-note{font-size:.72rem;color:#64748B;margin-top:14px;letter-spacing:.04em}
+
+/* FOOTER */
+footer{background:var(--bg);border-top:1px solid var(--border);padding:32px var(--pad);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px}
+.footer-logo{font-size:1rem;font-weight:700;color:var(--navy);text-decoration:none}
+.footer-logo span{color:var(--blue)}
+.flinks{display:flex;gap:20px;flex-wrap:wrap}
+.flinks a{font-size:.78rem;color:var(--muted);text-decoration:none;transition:color .15s;cursor:pointer}
+.flinks a:hover{color:var(--blue)}
+.fcopy{font-size:.72rem;color:var(--muted)}
+
+/* ── DEMO MODAL ── */
+.overlay{display:none;position:fixed;inset:0;z-index:300;background:rgba(10,22,40,.55);backdrop-filter:blur(4px);align-items:center;justify-content:center;padding:16px}
+.overlay.open{display:flex}
+.demo-modal{background:#fff;border:1px solid var(--border);border-radius:14px;width:100%;max-width:780px;max-height:92vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.15)}
+.dm-hd{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid var(--border);flex-shrink:0;background:var(--bg)}
+.dm-hd-left{display:flex;align-items:center;gap:12px}
+.dm-icon{font-size:1.4rem}
+.dm-title{font-size:.95rem;font-weight:700;color:var(--navy)}
+.dm-sub{font-size:.7rem;color:var(--muted);margin-top:1px}
+.dm-close{background:#fff;border:1px solid var(--border);color:var(--muted);width:30px;height:30px;border-radius:6px;cursor:pointer;font-size:.9rem;transition:all .15s;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.dm-close:hover{border-color:var(--navy);color:var(--navy)}
+.dm-body{display:flex;flex-direction:column;flex:1;overflow:hidden}
+
+/* Biz tabs */
+.biz-tabs{display:flex;gap:0;border-bottom:1px solid var(--border);overflow-x:auto;flex-shrink:0;background:#fff}
+.biz-tab{padding:10px 16px;font-size:.78rem;font-weight:500;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;transition:color .15s,border-color .15s;white-space:nowrap;flex-shrink:0}
+.biz-tab.on{color:var(--blue);border-bottom-color:var(--blue);font-weight:600}
+.biz-tab:hover:not(.on){color:var(--navy)}
+
+/* Chat */
+.chat-area{display:flex;flex-direction:column;flex:1;overflow:hidden}
+.chat-msgs{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:10px;background:#fff}
+.msg-ai{background:var(--bg);border:1px solid var(--border);border-radius:10px 10px 10px 2px;padding:10px 14px;font-size:.855rem;color:var(--body);max-width:82%;line-height:1.55}
+.msg-user{background:var(--blue);color:#fff;border-radius:10px 10px 2px 10px;padding:10px 14px;font-size:.855rem;max-width:72%;align-self:flex-end;line-height:1.55}
+.msg-sys{align-self:center;font-size:.65rem;color:var(--muted);background:var(--bg);padding:3px 10px;border-radius:20px;border:1px solid var(--border)}
+.typing{display:none;align-items:center;gap:4px;padding:2px 0}
+.typing.on{display:flex}
+.td{width:6px;height:6px;background:var(--blue);border-radius:50%;animation:tb 1.2s ease-in-out infinite}
+.td:nth-child(2){animation-delay:.2s}.td:nth-child(3){animation-delay:.4s}
+@keyframes tb{0%,80%,100%{transform:scale(.6);opacity:.3}40%{transform:scale(1);opacity:1}}
+.chat-inp-row{display:flex;border-top:1px solid var(--border);flex-shrink:0;background:#fff}
+.chat-inp{flex:1;border:none;outline:none;color:var(--navy);font-family:'Inter',sans-serif;font-size:.875rem;padding:13px 16px;background:transparent}
+.chat-inp::placeholder{color:var(--muted)}
+.chat-send{background:var(--blue);border:none;color:#fff;padding:13px 20px;font-weight:600;font-size:.82rem;cursor:pointer;transition:background .15s;flex-shrink:0}
+.chat-send:hover{background:var(--blue-dk)}
+.chat-send:disabled{opacity:.4;cursor:not-allowed}
+.dm-footer{padding:12px 20px;border-top:1px solid var(--border);display:flex;gap:8px;flex-shrink:0;background:var(--bg);flex-wrap:wrap}
+.dm-footer .btn-blue{padding:9px 18px;font-size:.82rem}
+.dm-footer .btn-white{padding:9px 18px;font-size:.82rem}
+
+/* Specialised: marketing has a textarea goal selector */
+.mk-controls{display:flex;gap:8px;padding:12px 16px;border-bottom:1px solid var(--border);background:var(--bg);flex-wrap:wrap;flex-shrink:0}
+.mk-sel{flex:1;min-width:140px;background:#fff;border:1px solid var(--border2);border-radius:6px;color:var(--navy);font-family:'Inter',sans-serif;font-size:.78rem;padding:7px 10px;outline:none}
+.mk-sel:focus{border-color:var(--blue)}
+
+/* RESPONSIVE */
+@media(max-width:900px){
+  nav ul{display:none}.hbg{display:flex}
+  .wf-grid,.what-inner,.price-grid{grid-template-columns:1fr}
+  .how-steps{grid-template-columns:1fr;max-width:380px;gap:20px}
+  .counters{grid-template-columns:repeat(3,1fr)}
+  .what-list{grid-template-columns:1fr}
+  .stat-row{grid-template-columns:1fr}
+  .stat+.stat{border-left:none;border-top:1px solid var(--border);margin-top:14px;padding-top:14px}
+  footer{flex-direction:column;text-align:center}.flinks{justify-content:center}
+  .hero-btns{flex-direction:column;align-items:center}
+  .btn-blue,.btn-white{width:100%;max-width:300px;text-align:center}
+  .demo-modal{max-height:96vh;border-radius:10px}
+}
+@media(max-width:560px){
+  section{padding:72px var(--pad)}
+  .hero{padding:96px var(--pad) 60px}
+  .counters{grid-template-columns:repeat(2,1fr)}
+  .pc-price{font-size:2.1rem}
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-logo" onclick="return false">MAMMBA<span>™</span></a>
+  <ul>
+    <li><a onclick="navTo('what');return false">What We Do</a></li>
+    <li><a onclick="navTo('workforce');return false">AI Employees</a></li>
+    <li><a onclick="navTo('pricing');return false">Pricing</a></li>
+    <li><a onclick="navTo('industries');return false">Industries</a></li>
+    <li><a href="https://mammbaagents.netlify.app/?signup=true" class="nav-cta" target="_blank">Get Started Free</a></li>
+  </ul>
+  <button class="hbg" id="hbg" onclick="toggleNav()"><span></span><span></span><span></span></button>
+</nav>
+<div class="mob-nav" id="mobNav">
+  <a onclick="navTo('what');closeNav();return false">What We Do</a>
+  <a onclick="navTo('workforce');closeNav();return false">AI Employees</a>
+  <a onclick="navTo('pricing');closeNav();return false">Pricing</a>
+  <a onclick="navTo('industries');closeNav();return false">Industries</a>
+  <a href="https://mammbaagents.netlify.app/?signup=true" target="_blank" onclick="closeNav()">Get Started Free →</a>
+</div>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="badge"><span class="badge-dot"></span>AI Employees Working Right Now</div>
+  <h1>Hire Your First <span>AI Employee</span> Today.</h1>
+  <p class="hero-sub">Stop hiring more staff. Build an AI workforce that works 24/7, never sleeps, and scales with your business.</p>
+  <div class="hero-btns">
+    <a href="https://mammbaagents.netlify.app/?signup=true" class="btn-blue" target="_blank">Get Your AI Employee →</a>
+    <a class="btn-white" onclick="navTo('workforce');return false">See AI Employees</a>
+  </div>
+  <div class="counters">
+    <div class="ctr"><span class="ctr-n" id="c0">0</span><span class="ctr-l">Calls answered</span></div>
+    <div class="ctr"><span class="ctr-n" id="c1">0</span><span class="ctr-l">Appts booked</span></div>
+    <div class="ctr"><span class="ctr-n" id="c2">0</span><span class="ctr-l">Leads followed up</span></div>
+    <div class="ctr"><span class="ctr-n" id="c3">0</span><span class="ctr-l">Texts sent</span></div>
+    <div class="ctr"><span class="ctr-n" id="c4">0</span><span class="ctr-l">Reviews requested</span></div>
+    <div class="ctr"><span class="ctr-n" id="c5">$0</span><span class="ctr-l">Revenue assisted</span></div>
+  </div>
+</section>
+
+<!-- WHAT -->
+<section class="what" id="what">
+  <div class="what-inner">
+    <div>
+      <span class="slabel">What Is an AI Employee?</span>
+      <h2>A trained team member that never stops working.</h2>
+      <p style="margin-top:12px;font-size:.93rem">An AI Employee is a digital team member built for your business. It learns your services, customers, and processes — then handles the work automatically, around the clock.</p>
+      <ul class="what-list">
+        <li>Answer incoming calls</li><li>Text customers instantly</li>
+        <li>Book appointments</li><li>Send estimates</li>
+        <li>Follow up every lead</li><li>Generate new business</li>
+        <li>Create content</li><li>Update your CRM</li>
+        <li>Request reviews</li><li>Operate 24/7</li>
+      </ul>
+    </div>
+    <div class="what-card">
+      <div class="what-quote">"Like adding a <em>full-time employee</em> — without a full-time salary."</div>
+      <p style="font-size:.875rem;color:var(--muted);margin-bottom:0">MAMMBA AI Employees plug into your existing business in hours, not months. No code required.</p>
+      <div class="stat-row">
+        <div class="stat"><div class="stat-n">24/7</div><div class="stat-l">Always working</div></div>
+        <div class="stat"><div class="stat-n">Days</div><div class="stat-l">Not months to deploy</div></div>
+        <div class="stat"><div class="stat-n">93%</div><div class="stat-l">Lower cost than staff</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WORKFORCE -->
+<section id="workforce">
+  <div class="wf-hd">
+    <span class="slabel">Meet Your AI Workforce</span>
+    <h2>Four employees. Every job covered.</h2>
+    <p style="color:var(--muted);margin-top:10px">Each AI Employee is trained for a specific role. Click any card to try a live demo.</p>
+  </div>
+  <div class="wf-grid">
+
+    <div class="ec" onclick="openDemo('rx')">
+      <div class="ec-role">Nexus AI — Receptionist</div>
+      <span class="ec-icon">📞</span>
+      <h3>Never miss another call.</h3>
+      <p class="ec-tag">Answers questions, schedules appointments, and routes customers — every time, instantly.</p>
+      <ul class="ec-feats">
+        <li>Answers inbound calls 24/7</li><li>Qualifies and routes leads</li>
+        <li>Books appointments directly</li><li>Handles after-hours inquiries</li>
+      </ul>
+      <div class="ec-replaces">
+        <div class="ec-rlbl">Replaces</div>
+        <div class="ec-chips"><span class="ec-chip">Receptionist</span><span class="ec-chip">Admin assistant</span><span class="ec-chip">After-hours service</span></div>
+      </div>
+      <span class="ec-cta">Try live demo →</span>
+    </div>
+
+    <div class="ec" onclick="openDemo('sl')">
+      <div class="ec-role">Apex AI — Sales Rep</div>
+      <span class="ec-icon">📈</span>
+      <h3>Converts leads into paying customers.</h3>
+      <p class="ec-tag">Follows up automatically so no lead goes cold — with emails, texts, and appointment setting on autopilot.</p>
+      <ul class="ec-feats">
+        <li>Follows up automatically on every lead</li><li>Sends targeted emails and texts</li>
+        <li>Books sales appointments</li><li>Nurtures prospects over time</li>
+      </ul>
+      <div class="ec-replaces">
+        <div class="ec-rlbl">Replaces</div>
+        <div class="ec-chips"><span class="ec-chip">Inside sales rep</span><span class="ec-chip">Lead nurture team</span><span class="ec-chip">Follow-up coordinator</span></div>
+      </div>
+      <span class="ec-cta">Try live demo →</span>
+    </div>
+
+    <div class="ec" onclick="openDemo('mk')">
+      <div class="ec-role">Prism AI — Marketing Specialist</div>
+      <span class="ec-icon">📣</span>
+      <h3>Creates content while you work.</h3>
+      <p class="ec-tag">Keeps your brand active with posts, campaigns, and promotions — generated and scheduled automatically.</p>
+      <ul class="ec-feats">
+        <li>Facebook and Instagram posts</li><li>TikTok content and scripts</li>
+        <li>Email campaigns and promotions</li><li>Seasonal offers and announcements</li>
+      </ul>
+      <div class="ec-replaces">
+        <div class="ec-rlbl">Replaces</div>
+        <div class="ec-chips"><span class="ec-chip">Social media manager</span><span class="ec-chip">Copywriter</span><span class="ec-chip">Marketing agency</span></div>
+      </div>
+      <span class="ec-cta">Try live demo →</span>
+    </div>
+
+    <div class="ec" onclick="openDemo('cs')">
+      <div class="ec-role">RetainAI — Customer Success</div>
+      <span class="ec-icon">⭐</span>
+      <h3>Keeps customers happy automatically.</h3>
+      <p class="ec-tag">Sends reminders, follows up after service, and re-engages old customers so you keep the business you've already won.</p>
+      <ul class="ec-feats">
+        <li>Sends appointment reminders</li><li>Requests Google and Yelp reviews</li>
+        <li>Follows up after every job</li><li>Re-engages lapsed customers</li>
+      </ul>
+      <div class="ec-replaces">
+        <div class="ec-rlbl">Replaces</div>
+        <div class="ec-chips"><span class="ec-chip">Customer success rep</span><span class="ec-chip">Review coordinator</span><span class="ec-chip">Retention team</span></div>
+      </div>
+      <span class="ec-cta">Try live demo →</span>
+    </div>
+
+  </div>
+</section>
+
+<!-- VS -->
+<section class="vs">
+  <div class="vs-hd">
+    <span class="slabel">Why Businesses Are Switching</span>
+    <h2>The math doesn't lie.</h2>
+  </div>
+  <div class="vs-scroll">
+    <table class="vs-table">
+      <thead><tr><th class="t0"></th><th class="t1">Traditional Employee</th><th class="t2">MAMMBA AI Employee</th></tr></thead>
+      <tbody>
+        <tr><td class="t0">Annual cost</td><td class="t1"><span class="xmk">✗</span>$40,000–$60,000 per year</td><td class="t2"><span class="chk">✓</span>Fraction of the cost</td></tr>
+        <tr><td class="t0">Hours of operation</td><td class="t1"><span class="xmk">✗</span>8 hours a day</td><td class="t2"><span class="chk">✓</span>24 hours a day</td></tr>
+        <tr><td class="t0">Time off</td><td class="t1"><span class="xmk">✗</span>Vacation and time off</td><td class="t2"><span class="chk">✓</span>No vacation, ever</td></tr>
+        <tr><td class="t0">Reliability</td><td class="t1"><span class="xmk">✗</span>Sick days and absences</td><td class="t2"><span class="chk">✓</span>Never calls out sick</td></tr>
+        <tr><td class="t0">Capacity</td><td class="t1"><span class="xmk">✗</span>Limited capacity</td><td class="t2"><span class="chk">✓</span>Scales to any volume</td></tr>
+        <tr><td class="t0">Setup time</td><td class="t1"><span class="xmk">✗</span>Months to onboard</td><td class="t2"><span class="chk">✓</span>Live in days</td></tr>
+        <tr><td class="t0">Long term</td><td class="t1"><span class="xmk">✗</span>Turnover and rehiring</td><td class="t2"><span class="chk">✓</span>Improves over time</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="vs-note" style="margin-top:16px">MAMMBA AI Employees cost <strong>93% less than a full-time hire</strong> — and work every minute you're open, and every minute you're not.</p>
+</section>
+
+<!-- PRICING -->
+<section id="pricing">
+  <div class="price-hd">
+    <span class="slabel">Pricing</span>
+    <h2>Pick your workforce.</h2>
+    <p style="color:var(--muted);margin-top:10px">Every plan includes setup, training, and ongoing support. No contracts. Cancel anytime.</p>
+  </div>
+  <div class="price-grid">
+    <div class="pc">
+      <div class="pc-tier">Starter</div><div class="pc-name">One AI Employee</div><div class="pc-sub">Perfect for getting started</div>
+      <div class="pc-price">$497<sub>/mo</sub></div><div class="pc-setup">+ $1,500 one-time setup fee</div>
+      <ul class="pc-feats"><li>AI Receptionist included</li><li>Customer text-back system</li><li>Lead capture and routing</li><li>Up to 500 conversations/mo</li><li>Monthly performance report</li></ul>
+      <a href="https://mammbaagents.netlify.app/?signup=true&plan=starter" class="btn-outline" style="width:100%;text-align:center;display:block;padding:11px" target="_blank">Get Started</a>
+    </div>
+    <div class="pc featured">
+      <div class="pop">Most Popular</div>
+      <div class="pc-tier">Growth</div><div class="pc-name">Three AI Employees</div><div class="pc-sub">For businesses ready to scale</div>
+      <div class="pc-price">$997<sub>/mo</sub></div><div class="pc-setup">+ $2,500 one-time setup fee</div>
+      <ul class="pc-feats"><li>AI Receptionist</li><li>AI Sales Representative</li><li>Follow-up automation suite</li><li>CRM integration</li><li>Unlimited conversations</li><li>Bi-weekly strategy check-in</li></ul>
+      <a href="https://mammbaagents.netlify.app/?signup=true&plan=growth" class="btn-blue" style="width:100%;text-align:center;display:block;padding:11px" target="_blank">Scale My Business</a>
+    </div>
+    <div class="pc">
+      <div class="pc-tier">Command Center</div><div class="pc-name">Complete AI Workforce</div><div class="pc-sub">The full team, fully automated</div>
+      <div class="pc-price">$2,997<sub>/mo</sub></div><div class="pc-setup">+ $5,000 one-time setup fee</div>
+      <ul class="pc-feats"><li>All four AI Employees</li><li>Reporting dashboard</li><li>Custom automations built for you</li><li>Priority support</li><li>Dedicated account manager</li><li>Quarterly AI workforce audit</li></ul>
+      <a href="https://mammbaagents.netlify.app/?signup=true&plan=command" class="btn-outline" style="width:100%;text-align:center;display:block;padding:11px" target="_blank">Book a Strategy Call</a>
+    </div>
+  </div>
+</section>
+
+<!-- HOW -->
+<section class="how">
+  <div class="how-hd">
+    <span class="slabel">How It Works</span>
+    <h2>From signup to running in minutes.</h2>
+    <p style="color:var(--muted);margin-top:10px">No complicated setup. No technical knowledge required.</p>
+  </div>
+  <div class="how-steps">
+    <div class="hs"><div class="hs-n">1</div><div class="hs-t">Choose Your Plan</div><p class="hs-d">Pick Starter, Growth, or Command Center based on your business size and goals.</p></div>
+    <div class="hs"><div class="hs-n">2</div><div class="hs-t">Hire Your Employee</div><p class="hs-d">Select an AI Employee, tell us about your business, and we handle the rest.</p></div>
+    <div class="hs"><div class="hs-n">3</div><div class="hs-t">Watch It Work</div><p class="hs-d">Your AI Employee goes live within days and starts delivering results immediately.</p></div>
+  </div>
+  <div style="text-align:center"><a href="https://mammbaagents.netlify.app/?signup=true" class="btn-blue" target="_blank">Start Hiring AI Employees →</a></div>
+</section>
+
+<!-- INDUSTRIES -->
+<section id="industries">
+  <div class="ind-hd">
+    <span class="slabel">Perfect For</span>
+    <h2>Built for businesses that run on service.</h2>
+    <p style="color:var(--muted);margin-top:10px">If you have customers to call, leads to follow up, and appointments to book — MAMMBA is built for your world.</p>
+  </div>
+  <div class="ind-grid">
+    <div class="ind-chip">🚛 Moving Companies</div><div class="ind-chip">📦 Courier Businesses</div>
+    <div class="ind-chip">🌿 Landscapers</div><div class="ind-chip">❄️ HVAC Companies</div>
+    <div class="ind-chip">🔧 Plumbers</div><div class="ind-chip">🚗 Auto Repair Shops</div>
+    <div class="ind-chip">💇 Salons &amp; Spas</div><div class="ind-chip">🏥 Medical Offices</div>
+    <div class="ind-chip">🏠 Real Estate Teams</div><div class="ind-chip">⚖️ Law Firms</div>
+  </div>
+</section>
+
+<!-- BOTTOM CTA -->
+<section class="cta-sec">
+  <span class="slabel" style="color:#60A5FA">The Future of Work</span>
+  <h2>The future isn't more employees.<br>It's <span>better ones.</span></h2>
+  <p class="cta-sub">Build your AI workforce with MAMMBA Enterprises LLC. Your business. Fully automated.</p>
+  <a href="https://mammbaagents.netlify.app/?signup=true" class="btn-blue" style="font-size:.95rem;padding:14px 30px" target="_blank">Get Your AI Employee Today →</a>
+  <div class="cta-note">No contracts · No tech knowledge needed · Live in days</div>
+</section>
+
+<footer>
+  <a class="footer-logo">MAMMBA<span>™</span></a>
+  <div class="flinks">
+    <a onclick="navTo('what');return false">What We Do</a>
+    <a onclick="navTo('workforce');return false">AI Employees</a>
+    <a onclick="navTo('pricing');return false">Pricing</a>
+    <a onclick="navTo('industries');return false">Industries</a>
+  </div>
+  <div class="fcopy">© 2025 MAMMBA Enterprises LLC · AI Employees™ Built to work. Built to scale.</div>
+</footer>
+
+<!-- ══ DEMO MODAL ══ -->
+<div class="overlay" id="overlay" onclick="if(event.target===this)closeDemo()">
+  <div class="demo-modal">
+
+    <div class="dm-hd">
+      <div class="dm-hd-left">
+        <span class="dm-icon" id="dmIcon">📞</span>
+        <div>
+          <div class="dm-title" id="dmTitle">AI Receptionist — Live Demo</div>
+          <div class="dm-sub" id="dmSub">Powered by Claude AI · Try a real conversation</div>
+        </div>
+      </div>
+      <button class="dm-close" onclick="closeDemo()">✕</button>
+    </div>
+
+    <div class="dm-body">
+      <!-- Biz selector tabs -->
+      <div class="biz-tabs" id="bizTabs"></div>
+
+      <!-- Marketing extra controls -->
+      <div class="mk-controls" id="mkControls" style="display:none">
+        <select class="mk-sel" id="mkPlatform">
+          <option value="instagram">📸 Instagram Post</option>
+          <option value="facebook">📘 Facebook Post</option>
+          <option value="tiktok">🎵 TikTok Script</option>
+          <option value="email">📧 Email Campaign</option>
+        </select>
+        <select class="mk-sel" id="mkGoal">
+          <option value="promo">Special Offer / Promo</option>
+          <option value="seasonal">Seasonal / Holiday</option>
+          <option value="tips">Educational Tips</option>
+          <option value="review">Share a Review</option>
+          <option value="announce">Announcement</option>
+        </select>
+      </div>
+
+      <!-- Chat -->
+      <div class="chat-area">
+        <div class="chat-msgs" id="chatMsgs">
+          <div class="msg-sys">Connected · Powered by Claude AI</div>
+          <div class="msg-ai" id="welcomeMsg"></div>
+          <div class="typing" id="typing"><div class="td"></div><div class="td"></div><div class="td"></div></div>
+        </div>
+        <div class="chat-inp-row">
+          <input class="chat-inp" id="chatInp" placeholder="Type your message..." onkeydown="if(event.key==='Enter')send()"/>
+          <button class="chat-send" id="chatSend" onclick="send()">Send</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="dm-footer">
+      <a href="https://mammbaagents.netlify.app/?signup=true" class="btn-blue" id="dmCta" target="_blank">Hire This Employee →</a>
+      <a class="btn-white" onclick="closeDemo();navTo('pricing');return false">See Pricing</a>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// ── NAV ──
+function navTo(id){const el=document.getElementById(id);if(el)el.scrollIntoView({behavior:'smooth',block:'start'})}
+function toggleNav(){document.getElementById('hbg').classList.toggle('open');document.getElementById('mobNav').classList.toggle('open')}
+function closeNav(){document.getElementById('hbg').classList.remove('open');document.getElementById('mobNav').classList.remove('open')}
+document.addEventListener('click',e=>{const m=document.getElementById('mobNav'),b=document.getElementById('hbg');if(m.classList.contains('open')&&!m.contains(e.target)&&!b.contains(e.target))closeNav()})
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeDemo();closeNav()}})
+
+// ── COUNTERS ──
+const CV=[{id:'c0',v:2847,p:''},{id:'c1',v:1203,p:''},{id:'c2',v:4571,p:''},{id:'c3',v:9204,p:''},{id:'c4',v:618,p:''},{id:'c5',v:284000,p:'$'}]
+const fmt=(n,p)=>p==='$'?'$'+(n>=1000?Math.round(n/1000)+'K':n.toLocaleString()):n.toLocaleString()
+function runC(){const s=performance.now();(function f(t){const p=Math.min((t-s)/2000,1),e=1-Math.pow(1-p,3);CV.forEach(c=>{const el=document.getElementById(c.id);if(el)el.textContent=fmt(Math.floor(c.v*e),c.p)});p<1&&requestAnimationFrame(f)})(s)}
+const ob=new IntersectionObserver(([e])=>{if(e.isIntersecting){runC();ob.disconnect()}},{threshold:.2})
+const ce=document.querySelector('.counters');if(ce)ob.observe(ce)
+setTimeout(()=>setInterval(()=>{const c=CV[Math.floor(Math.random()*CV.length)];c.v+=Math.floor(Math.random()*3)+1;const el=document.getElementById(c.id);if(el)el.textContent=fmt(c.v,c.p)},3000),4000)
+
+// ── DEMO CONFIG ──
+const DEMOS = {
+  rx: {
+    icon:'📞', title:'Nexus AI Receptionist — Live Demo', sub:'Answer calls · Book appointments · Route leads',
+    cta:'Hire AI Receptionist →',
+    bizzes:[
+      {label:'🦷 Dental',    name:'Bright Smile Dental',  type:'dental practice'},
+      {label:'❄️ HVAC',      name:'CoolAir HVAC',         type:'HVAC company'},
+      {label:'💆 Spa',       name:'Serenity Day Spa',     type:'day spa'},
+      {label:'⚖️ Law Firm',  name:'Sterling & Associates',type:'law firm'},
+      {label:'🏠 Real Estate',name:'Coastal Realty',      type:'real estate agency'},
+    ],
+    system:(biz,type)=>`You are Nexus, the AI receptionist for ${biz}, a ${type}. Be warm, professional, and concise — keep replies to 2-4 sentences, like a real phone call. Help callers book appointments (suggest 2-3 realistic time slots when relevant), answer questions about services, hours, and pricing. Always end with a clear next step or question.`,
+    welcome:(biz)=>`Hi, thank you for calling ${biz}! I'm your AI receptionist. How can I help you today?`
+  },
+  sl: {
+    icon:'📈', title:'Apex AI Sales Rep — Live Demo', sub:'Follow up leads · Qualify prospects · Book appointments',
+    cta:'Hire AI Sales Rep →',
+    bizzes:[
+      {label:'🦷 Dental',     name:'Dental Practice',    type:'dental practice'},
+      {label:'❄️ HVAC',       name:'HVAC Company',       type:'HVAC company'},
+      {label:'🏠 Real Estate', name:'Real Estate Agency', type:'real estate agency'},
+      {label:'💪 Gym',         name:'Peak Fitness',       type:'fitness studio'},
+    ],
+    system:(biz,type)=>`You are Apex, an AI sales rep following up with a lead for a ${type} called ${biz}. Be friendly and helpful — never pushy. Keep replies to 2-4 sentences. Your goals: qualify the lead (budget, timeline, needs), build rapport, and book a consultation. Ask natural questions. Offer specific time slots when they show interest.`,
+    welcome:()=>`Hi there! I'm following up on your recent inquiry — thanks for your interest! I'd love to learn a little more about what you're looking for. Do you have a quick minute?`
+  },
+  mk: {
+    icon:'📣', title:'Prism AI Marketing Specialist — Live Demo', sub:'Social posts · Email campaigns · TikTok scripts',
+    cta:'Hire AI Marketing Specialist →',
+    bizzes:[
+      {label:'🦷 Dental',     name:'Bright Smile Dental', type:'dental practice'},
+      {label:'🍽️ Restaurant', name:'Casa Verde',           type:'restaurant'},
+      {label:'💆 Spa',        name:'Serenity Day Spa',    type:'spa and salon'},
+      {label:'❄️ HVAC',       name:'CoolAir HVAC',        type:'HVAC company'},
+    ],
+    system:(biz,type,platform,goal)=>`You are Prism, an AI marketing specialist for ${biz}, a ${type}. Write ${platform} content with the goal to ${goal}. Be creative, engaging, and platform-native. When asked to create content, write it immediately and completely — do not describe what you'll write, just write it. Include relevant emojis and hashtags where appropriate. Keep it punchy and on-brand for a local service business.`,
+    welcome:(biz)=>`Hi! I'm Prism, your AI Marketing Specialist for ${biz}. Use the dropdowns above to pick your platform and goal, then tell me what you need — I'll write it for you right now. Or just type a request like "write me a summer promo post"!`
+  },
+  cs: {
+    icon:'⭐', title:'RetainAI Customer Success — Live Demo', sub:'Reminders · Review requests · Re-engagement',
+    cta:'Hire AI Customer Success Manager →',
+    bizzes:[
+      {label:'🦷 Dental',  name:'Bright Smile Dental', type:'dental practice'},
+      {label:'❄️ HVAC',    name:'CoolAir HVAC',        type:'HVAC company'},
+      {label:'💆 Spa',     name:'Serenity Day Spa',    type:'spa and salon'},
+      {label:'🚗 Auto Shop',name:'Precision Auto',     type:'auto repair shop'},
+    ],
+    system:(biz,type)=>`You are RetainAI, a customer success manager for ${biz}, a ${type}. Be warm, genuine, and caring — 2-4 sentences per reply. Your goals: check customer satisfaction after their visit, request Google or Yelp reviews from happy customers, re-engage lapsed customers with offers, and send appointment reminders. Sound like a real person who genuinely cares about the customer's experience.`,
+    welcome:(biz)=>`Hi! Just checking in after your recent visit to ${biz} — hope everything went great! We really appreciate your business. Is there anything we can help with, or would you be open to sharing a quick review? 😊`
+  }
+}
+
+// ── DEMO STATE ──
+let state = {role:null, biz:null, type:null, history:[], busy:false}
+
+function openDemo(role) {
+  const D = DEMOS[role]
+  state = {role, biz:D.bizzes[0].name, type:D.bizzes[0].type, history:[], busy:false}
+
+  // Header
+  document.getElementById('dmIcon').textContent = D.icon
+  document.getElementById('dmTitle').textContent = D.title
+  document.getElementById('dmSub').textContent = D.sub
+  document.getElementById('dmCta').textContent = D.cta
+
+  // Biz tabs
+  const tabs = document.getElementById('bizTabs')
+  tabs.innerHTML = D.bizzes.map((b,i)=>
+    `<div class="biz-tab${i===0?' on':''}" onclick="switchBiz(${i},'${role}')">${b.label}</div>`
+  ).join('')
+
+  // Marketing extras
+  document.getElementById('mkControls').style.display = role==='mk' ? 'flex' : 'none'
+
+  // Welcome message
+  renderWelcome(role)
+
+  // Open
+  document.getElementById('overlay').classList.add('open')
+  document.body.style.overflow = 'hidden'
+  setTimeout(()=>document.getElementById('chatInp')?.focus(), 100)
+}
+
+function renderWelcome(role) {
+  const D = DEMOS[role]
+  const welcome = D.welcome(state.biz)
+  state.history = [{role:'assistant', content:welcome}]
+
+  const msgs = document.getElementById('chatMsgs')
+  msgs.innerHTML = `
+    <div class="msg-sys">Connected · Powered by Claude AI</div>
+    <div class="msg-ai">${welcome}</div>
+    <div class="typing" id="typing"><div class="td"></div><div class="td"></div><div class="td"></div></div>`
+}
+
+function switchBiz(idx, role) {
+  const D = DEMOS[role]
+  const b = D.bizzes[idx]
+  state.biz = b.name
+  state.type = b.type
+  state.busy = false
+
+  document.querySelectorAll('.biz-tab').forEach((t,i)=>t.classList.toggle('on', i===idx))
+  renderWelcome(role)
+}
+
+function closeDemo() {
+  document.getElementById('overlay').classList.remove('open')
+  document.body.style.overflow = ''
+}
+
+async function send() {
+  if (state.busy) return
+  const inp = document.getElementById('chatInp')
+  const txt = inp.value.trim()
+  if (!txt) return
+
+  inp.value = ''
+  state.busy = true
+  document.getElementById('chatSend').disabled = true
+
+  addMsg(txt, 'user')
+  state.history.push({role:'user', content:txt})
+  document.getElementById('typing').classList.add('on')
+  scrollChat()
+
+  try {
+    const D = DEMOS[state.role]
+    const platform = document.getElementById('mkPlatform')?.value || 'instagram'
+    const goalMap = {promo:'promote a special offer or discount',seasonal:'create a seasonal or holiday post',tips:'share helpful tips or educational content',review:'showcase a customer review or testimonial',announce:'make a business announcement'}
+    const goal = goalMap[document.getElementById('mkGoal')?.value] || 'engage the audience'
+
+    const sys = state.role==='mk'
+      ? D.system(state.biz, state.type, platform+' post', goal)
+      : D.system(state.biz, state.type)
+
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({model:'claude-sonnet-4-6', max_tokens:1000, system:sys, messages:state.history})
+    })
+    const data = await res.json()
+    const reply = data.content?.[0]?.text || "Sorry, could you try that again?"
+    document.getElementById('typing').classList.remove('on')
+    addMsg(reply, 'ai')
+    state.history.push({role:'assistant', content:reply})
+  } catch(e) {
+    document.getElementById('typing').classList.remove('on')
+    addMsg("Brief connection issue — please try again!", 'ai')
+  }
+
+  state.busy = false
+  document.getElementById('chatSend').disabled = false
+  document.getElementById('chatInp').focus()
+}
+
+function addMsg(txt, type) {
+  const msgs = document.getElementById('chatMsgs')
+  const typing = document.getElementById('typing')
+  const d = document.createElement('div')
+  d.className = type==='ai' ? 'msg-ai' : 'msg-user'
+  d.textContent = txt
+  msgs.insertBefore(d, typing)
+  scrollChat()
+}
+
+function scrollChat() {
+  const m = document.getElementById('chatMsgs')
+  if (m) m.scrollTop = m.scrollHeight
+}
+</script>
+</body>
+</html>
