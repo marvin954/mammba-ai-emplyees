@@ -33,3 +33,9 @@ logs/
 
 # Prisma generated
 packages/database/src/generated/
+
+# TypeScript build info
+*.tsbuildinfo
+
+# Next.js
+apps/web/next-env.d.ts
