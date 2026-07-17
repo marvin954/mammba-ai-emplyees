@@ -14,6 +14,8 @@ const navItems = [
   { href: '/marketing', label: 'Marketing', icon: '📣' },
   { href: '/support', label: 'Support', icon: '💬' },
   { href: '/finance', label: 'Finance', icon: '💵' },
+  { href: '/marketplace', label: 'Marketplace', icon: '🏪' },
+  { href: '/agency', label: 'Agency', icon: '🏢' },
   { href: '/automations', label: 'Automations', icon: '⚡' },
   { href: '/analytics', label: 'Analytics', icon: '📊' },
   { href: '/billing', label: 'Billing', icon: '💳' },

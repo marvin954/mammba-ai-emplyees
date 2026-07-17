@@ -52,6 +52,7 @@ model Organization {
   campaigns        Campaign[]
   supportTickets   SupportTicket[]
   transactions     FinancialTransaction[]
+  pluginInstalls   PluginInstall[]
 
   @@index([slug])
   @@index([ownerId])
@@ -626,7 +627,61 @@ model CalendarIntegration {
   @@map("calendar_integrations")
 }
 
-// ─── Marketing ───────────────────────────────────────────────────────────────
+// ─── Plugin Marketplace ───────────────────────────────────────────────────────
+
+model Plugin {
+  id              String    @id @default(cuid())
+  slug            String    @unique
+  name            String
+  description     String    @db.Text
+  longDescription String?   @db.Text
+  author          String
+  authorOrgId     String?
+  category        String    // 'crm' | 'marketing' | 'support' | 'finance' | 'hr' | 'analytics' | 'integration' | 'utility'
+  schemaVersion   String    @default("2.0")
+  version         String
+  requiredPlan    String    @default("starter")
+  permissions     String[]
+  tools           String[]
+  entrypoint      String?
+  manifestRaw     Json      @default("{}")
+  iconUrl         String?
+  screenshotUrls  String[]
+  tags            String[]
+  status          String    @default("pending") // pending | approved | rejected | deprecated
+  isOfficial      Boolean   @default(false)
+  installCount    Int       @default(0)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  installs        PluginInstall[]
+
+  @@index([category])
+  @@index([status])
+  @@index([slug])
+  @@map("plugins")
+}
+
+model PluginInstall {
+  id         String   @id @default(cuid())
+  orgId      String
+  pluginId   String
+  pluginSlug String
+  version    String
+  config     Json     @default("{}")
+  enabled    Boolean  @default(true)
+  installedAt DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  plugin     Plugin       @relation(fields: [pluginId], references: [id])
+
+  @@unique([orgId, pluginSlug])
+  @@index([orgId])
+  @@index([pluginId])
+  @@map("plugin_installs")
+}
+
+// ─── Marketing ──────────────────────────────────────────────────────────────���
 
 model Campaign {
   id          String    @id @default(cuid())

@@ -5,6 +5,7 @@ import { ValidationPipe, Logger } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import helmet from 'helmet';
 import { AppModule } from './app.module.js';
+import { MarketplaceService } from './marketplace/marketplace.service.js';
 
 async function bootstrap(): Promise<void> {
   const logger = new Logger('Bootstrap');
@@ -40,6 +41,15 @@ async function bootstrap(): Promise<void> {
       .build();
     const document = SwaggerModule.createDocument(app, config);
     SwaggerModule.setup('api/docs', app, document);
+  }
+
+  // Seed official plugins idempotently on every startup
+  try {
+    const marketplaceService = app.get(MarketplaceService);
+    await marketplaceService.seedOfficialPlugins();
+    logger.log('Official plugins seeded');
+  } catch (err) {
+    logger.warn(`Plugin seed failed (non-fatal): ${String(err)}`);
   }
 
   const port = Number(process.env['PORT'] ?? 4000);
