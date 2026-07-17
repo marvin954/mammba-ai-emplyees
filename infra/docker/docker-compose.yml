@@ -1,0 +1,71 @@
+version: '3.9'
+
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: nexusos-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: nexusos
+      POSTGRES_USER: nexusos
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-nexusos_dev_password}
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U nexusos -d nexusos']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: nexusos-redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    ports:
+      - '6379:6379'
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  n8n:
+    image: n8nio/n8n:latest
+    container_name: nexusos-n8n
+    restart: unless-stopped
+    environment:
+      N8N_BASIC_AUTH_ACTIVE: 'true'
+      N8N_BASIC_AUTH_USER: ${N8N_BASIC_AUTH_USER:-admin}
+      N8N_BASIC_AUTH_PASSWORD: ${N8N_BASIC_AUTH_PASSWORD:-n8n_dev_password}
+      DB_TYPE: postgresdb
+      DB_POSTGRESDB_HOST: postgres
+      DB_POSTGRESDB_DATABASE: n8n
+      DB_POSTGRESDB_USER: nexusos
+      DB_POSTGRESDB_PASSWORD: ${POSTGRES_PASSWORD:-nexusos_dev_password}
+      N8N_ENCRYPTION_KEY: ${N8N_ENCRYPTION_KEY:-change_this_32_char_key_for_prod}
+      WEBHOOK_URL: http://localhost:5678/
+    ports:
+      - '5678:5678'
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - n8n_data:/home/node/.n8n
+
+  mailpit:
+    image: axllent/mailpit:latest
+    container_name: nexusos-mailpit
+    restart: unless-stopped
+    ports:
+      - '8025:8025'   # Web UI
+      - '1025:1025'   # SMTP
+
+volumes:
+  postgres_data:
+  redis_data:
+  n8n_data:

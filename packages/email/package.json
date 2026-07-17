@@ -1,0 +1,20 @@
+{
+  "name": "@nexusos/email",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": { ".": { "import": "./dist/index.js", "types": "./dist/index.d.ts" } },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@nexusos/types": "workspace:*",
+    "nodemailer": "^6.9.15"
+  },
+  "devDependencies": {
+    "@types/nodemailer": "^6.4.15",
+    "typescript": "^5.5.0"
+  }
+}

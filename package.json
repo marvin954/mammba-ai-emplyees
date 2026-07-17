@@ -1,0 +1,34 @@
+{
+  "name": "nexusos",
+  "private": true,
+  "version": "0.1.0",
+  "description": "NexusOS — Multi-Tenant AI Business Operating System",
+  "packageManager": "pnpm@9.0.0",
+  "engines": {
+    "node": ">=20.0.0",
+    "pnpm": ">=9.0.0"
+  },
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "turbo run dev",
+    "lint": "turbo run lint",
+    "typecheck": "turbo run typecheck",
+    "test": "turbo run test",
+    "test:e2e": "turbo run test:e2e",
+    "db:migrate": "turbo run db:migrate",
+    "db:generate": "turbo run db:generate",
+    "clean": "turbo run clean && rm -rf node_modules"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.0",
+    "turbo": "^2.1.0",
+    "typescript": "^5.5.0",
+    "eslint": "^9.6.0",
+    "@typescript-eslint/eslint-plugin": "^7.14.0",
+    "@typescript-eslint/parser": "^7.14.0",
+    "prettier": "^3.3.0"
+  },
+  "pnpm": {
+    "overrides": {}
+  }
+}

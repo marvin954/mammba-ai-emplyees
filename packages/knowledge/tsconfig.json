@@ -1,0 +1,22 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": "dist",
+    "rootDir": "src",
+    "exactOptionalPropertyTypes": false,
+    "noUncheckedIndexedAccess": false,
+    "module": "CommonJS",
+    "moduleResolution": "Node"
+  },
+  "references": [
+    {
+      "path": "../types"
+    },
+    {
+      "path": "../database"
+    }
+  ],
+  "include": [
+    "src"
+  ]
+}
