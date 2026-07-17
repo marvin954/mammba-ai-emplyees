@@ -12,6 +12,9 @@ import { EmailDraftsModule } from './email-drafts/email-drafts.module.js';
 import { CalendarModule } from './calendar/calendar.module.js';
 import { BillingModule } from './billing/billing.module.js';
 import { KnowledgeModule } from './knowledge/knowledge.module.js';
+import { MarketingModule } from './marketing/marketing.module.js';
+import { SupportModule } from './support/support.module.js';
+import { FinanceModule } from './finance/finance.module.js';
 import { DatabaseModule } from './common/database.module.js';
 
 @Module({
@@ -35,6 +38,9 @@ import { DatabaseModule } from './common/database.module.js';
     CalendarModule,
     BillingModule,
     KnowledgeModule,
+    MarketingModule,
+    SupportModule,
+    FinanceModule,
   ],
 })
 export class AppModule {}

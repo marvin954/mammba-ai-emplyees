@@ -150,6 +150,198 @@ export function registerBuiltinTools(registry: ToolRegistry, db: PrismaClient): 
     },
   );
 
+  // ── Support: ticket read ─────────────────────────────────────────────────
+  registry.register(
+    {
+      name: 'support.ticket.read',
+      description: 'Look up a support ticket by ID or ticket number',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          ticketId: { type: 'string' },
+          ticketNumber: { type: 'number' },
+        },
+      },
+      requiredPermission: 'agent.run.create',
+      riskLevel: 'low',
+      approvalPolicy: 'never',
+      idempotent: true,
+      timeoutMs: 5000,
+      auditRequired: false,
+    },
+    async (input, ctx) => {
+      const { ticketId, ticketNumber } = input as { ticketId?: string; ticketNumber?: number };
+      return db.supportTicket.findFirst({
+        where: {
+          orgId: ctx.orgId,
+          ...(ticketId ? { id: ticketId } : {}),
+          ...(ticketNumber ? { ticketNumber } : {}),
+        },
+        include: { messages: { orderBy: { createdAt: 'asc' }, take: 20 } },
+      });
+    },
+  );
+
+  // ── Support: ticket update ────────────────────────────────────────────────
+  registry.register(
+    {
+      name: 'support.ticket.update',
+      description: 'Update a support ticket status, priority, or add an AI response message',
+      inputSchema: {
+        type: 'object',
+        required: ['ticketId'],
+        properties: {
+          ticketId: { type: 'string' },
+          status: { type: 'string', enum: ['open', 'in_progress', 'waiting', 'resolved', 'closed'] },
+          priority: { type: 'string', enum: ['low', 'medium', 'high', 'urgent'] },
+          replyBody: { type: 'string', description: 'AI-drafted reply to add as a message (requires approval)' },
+        },
+      },
+      requiredPermission: 'agent.run.create',
+      riskLevel: 'medium',
+      approvalPolicy: 'optional',
+      idempotent: false,
+      timeoutMs: 5000,
+      auditRequired: true,
+    },
+    async (input, ctx) => {
+      const { ticketId, status, priority, replyBody } = input as {
+        ticketId: string;
+        status?: string;
+        priority?: string;
+        replyBody?: string;
+      };
+
+      const ticket = await db.supportTicket.findFirst({
+        where: { id: ticketId, orgId: ctx.orgId },
+      });
+      if (!ticket) throw new Error(`Ticket ${ticketId} not found in org ${ctx.orgId}`);
+
+      const updates: Record<string, unknown> = {};
+      if (status) {
+        updates.status = status;
+        if (status === 'resolved') updates.resolvedAt = new Date();
+        if (status === 'closed') updates.closedAt = new Date();
+      }
+      if (priority) updates.priority = priority;
+      if (Object.keys(updates).length > 0) {
+        await db.supportTicket.update({ where: { id: ticketId }, data: updates });
+      }
+
+      if (replyBody) {
+        await db.ticketMessage.create({
+          data: {
+            ticketId,
+            orgId: ctx.orgId,
+            senderType: 'ai',
+            senderId: ctx.agentId,
+            body: replyBody,
+          },
+        });
+      }
+
+      return { ticketId, updated: true };
+    },
+  );
+
+  // ── Marketing: campaign read ──────────────────────────────────────────────
+  registry.register(
+    {
+      name: 'marketing.campaign.read',
+      description: 'Read campaign details and assets',
+      inputSchema: {
+        type: 'object',
+        required: ['campaignId'],
+        properties: { campaignId: { type: 'string' } },
+      },
+      requiredPermission: 'agent.run.create',
+      riskLevel: 'low',
+      approvalPolicy: 'never',
+      idempotent: true,
+      timeoutMs: 5000,
+      auditRequired: false,
+    },
+    async (input, ctx) => {
+      const { campaignId } = input as { campaignId: string };
+      return db.campaign.findFirst({
+        where: { id: campaignId, orgId: ctx.orgId },
+        include: { assets: true },
+      });
+    },
+  );
+
+  // ── Marketing: create asset ───────────────────────────────────────────────
+  registry.register(
+    {
+      name: 'marketing.asset.create',
+      description: 'Create a draft marketing asset (copy, post, email) attached to a campaign',
+      inputSchema: {
+        type: 'object',
+        required: ['campaignId', 'type', 'name', 'content'],
+        properties: {
+          campaignId: { type: 'string' },
+          type: { type: 'string', enum: ['email', 'social_post', 'ad_copy', 'landing_page'] },
+          name: { type: 'string' },
+          content: { type: 'string' },
+        },
+      },
+      requiredPermission: 'agent.run.create',
+      riskLevel: 'medium',
+      approvalPolicy: 'always',
+      idempotent: false,
+      timeoutMs: 5000,
+      auditRequired: true,
+    },
+    async (input, ctx) => {
+      const { campaignId, type, name, content } = input as {
+        campaignId: string;
+        type: string;
+        name: string;
+        content: string;
+      };
+      const campaign = await db.campaign.findFirst({ where: { id: campaignId, orgId: ctx.orgId } });
+      if (!campaign) throw new Error(`Campaign ${campaignId} not found`);
+
+      return db.campaignAsset.create({
+        data: { campaignId, orgId: ctx.orgId, type, name, content, status: 'draft' },
+      });
+    },
+  );
+
+  // ── Finance: flag transaction ─────────────────────────────────────────────
+  registry.register(
+    {
+      name: 'finance.transaction.flag',
+      description: 'Flag a financial transaction for human review',
+      inputSchema: {
+        type: 'object',
+        required: ['transactionId', 'reason'],
+        properties: {
+          transactionId: { type: 'string' },
+          reason: { type: 'string' },
+        },
+      },
+      requiredPermission: 'agent.run.create',
+      riskLevel: 'low',
+      approvalPolicy: 'never',
+      idempotent: true,
+      timeoutMs: 5000,
+      auditRequired: true,
+    },
+    async (input, ctx) => {
+      const { transactionId, reason } = input as { transactionId: string; reason: string };
+      const tx = await db.financialTransaction.findFirst({
+        where: { id: transactionId, orgId: ctx.orgId },
+      });
+      if (!tx) throw new Error(`Transaction ${transactionId} not found`);
+
+      return db.financialTransaction.update({
+        where: { id: transactionId },
+        data: { flagged: true, flagReason: reason },
+      });
+    },
+  );
+
   // ── Knowledge: search ────────────────────────────────────────────────────
   registry.register(
     {

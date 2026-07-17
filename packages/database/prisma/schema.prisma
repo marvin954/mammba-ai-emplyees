@@ -49,6 +49,9 @@ model Organization {
   knowledgeSources KnowledgeSource[]
   notifications    Notification[]
   emailDrafts      EmailDraft[]
+  campaigns        Campaign[]
+  supportTickets   SupportTicket[]
+  transactions     FinancialTransaction[]
 
   @@index([slug])
   @@index([ownerId])
@@ -621,6 +624,138 @@ model CalendarIntegration {
   @@index([orgId])
   @@index([userId])
   @@map("calendar_integrations")
+}
+
+// ─── Marketing ───────────────────────────────────────────────────────────────
+
+model Campaign {
+  id          String    @id @default(cuid())
+  orgId       String
+  name        String
+  type        String    // 'email' | 'social' | 'content' | 'paid' | 'event'
+  status      String    @default("draft") // draft | active | paused | completed | archived
+  description String?   @db.Text
+  goal        String?
+  targetAudience String?
+  budget      Float?
+  spend       Float     @default(0)
+  startDate   DateTime?
+  endDate     DateTime?
+  metrics     Json      @default("{}")
+  agentId     String?
+  createdById String
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  org         Organization   @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  assets      CampaignAsset[]
+
+  @@index([orgId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("campaigns")
+}
+
+model CampaignAsset {
+  id         String   @id @default(cuid())
+  campaignId String
+  orgId      String
+  type       String   // 'email' | 'social_post' | 'ad_copy' | 'landing_page' | 'image'
+  name       String
+  content    String   @db.Text
+  status     String   @default("draft") // draft | approved | published
+  metadata   Json     @default("{}")
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  campaign   Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+
+  @@index([campaignId])
+  @@index([orgId])
+  @@map("campaign_assets")
+}
+
+// ─── Support ──────────────────────────────────────────────────────────────────
+
+model SupportTicket {
+  id           String    @id @default(cuid())
+  orgId        String
+  ticketNumber Int
+  subject      String
+  description  String    @db.Text
+  status       String    @default("open")   // open | in_progress | waiting | resolved | closed
+  priority     String    @default("medium") // low | medium | high | urgent
+  category     String    @default("general")
+  fromEmail    String?
+  fromName     String?
+  contactId    String?
+  assignedToId String?   // agent or user id
+  agentId      String?
+  resolvedAt   DateTime?
+  closedAt     DateTime?
+  metadata     Json      @default("{}")
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  org          Organization      @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  messages     TicketMessage[]
+
+  @@unique([orgId, ticketNumber])
+  @@index([orgId])
+  @@index([status])
+  @@index([priority])
+  @@index([createdAt])
+  @@map("support_tickets")
+}
+
+model TicketMessage {
+  id        String   @id @default(cuid())
+  ticketId  String
+  orgId     String
+  senderType String  // 'customer' | 'agent' | 'ai'
+  senderId  String?
+  body      String   @db.Text
+  isInternal Boolean @default(false)
+  metadata  Json     @default("{}")
+  createdAt DateTime @default(now())
+
+  ticket    SupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+
+  @@index([ticketId])
+  @@index([orgId])
+  @@map("ticket_messages")
+}
+
+// ─── Finance ──────────────────────────────────────────────────────────────────
+
+model FinancialTransaction {
+  id          String    @id @default(cuid())
+  orgId       String
+  type        String    // 'income' | 'expense' | 'transfer'
+  category    String    @default("uncategorized")
+  description String
+  amount      Float
+  currency    String    @default("USD")
+  date        DateTime
+  reference   String?
+  vendor      String?
+  flagged     Boolean   @default(false)
+  flagReason  String?
+  reconciled  Boolean   @default(false)
+  agentId     String?
+  metadata    Json      @default("{}")
+  createdById String
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  org         Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+
+  @@index([orgId])
+  @@index([type])
+  @@index([category])
+  @@index([date])
+  @@index([flagged])
+  @@map("financial_transactions")
 }
 
 // ─── Audit ────────────────────────────────────────────────────────────────────
