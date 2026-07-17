@@ -1,198 +1,325 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { apiRequest, getToken } from '@/lib/api';
+import { apiRequest } from '@/lib/api';
+
+type CrmTab = 'contacts' | 'companies' | 'deals' | 'activities';
 
 interface Contact {
   id: string;
   firstName: string;
   lastName: string;
   email: string;
-  leadStatus: string;
-  leadScore: number;
-  source: string | null;
+  phone?: string | null;
+  leadScore?: number;
+  leadStatus?: string | null;
+  source?: string | null;
   createdAt: string;
 }
 
-interface SubmitLeadResult {
-  contactId: string;
-  dealId: string | null;
-  agentRunId: string | null;
+interface Company {
+  id: string;
+  name: string;
+  domain?: string | null;
+  industry?: string | null;
+  size?: string | null;
+  createdAt: string;
 }
 
-const STATUS_COLORS: Record<string, string> = {
-  new: 'bg-blue-500/20 text-blue-300',
-  contacted: 'bg-yellow-500/20 text-yellow-300',
-  qualified: 'bg-green-500/20 text-green-300',
-  unqualified: 'bg-red-500/20 text-red-300',
-  converted: 'bg-violet-500/20 text-violet-300',
-};
+interface Deal {
+  id: string;
+  name: string;
+  value: number;
+  currency: string;
+  status: string;
+  stage: { name: string; color: string };
+  contact?: { firstName: string; lastName: string } | null;
+  createdAt: string;
+}
+
+interface Activity {
+  id: string;
+  type: string;
+  subject: string;
+  body?: string | null;
+  createdAt: string;
+}
+
+function LeadScoreBadge({ score }: { score?: number }) {
+  const s = score ?? 0;
+  const color = s >= 70 ? 'bg-green-500/20 text-green-400' : s >= 40 ? 'bg-yellow-500/20 text-yellow-400' : 'bg-red-500/20 text-red-400';
+  return <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${color}`}>{s}</span>;
+}
 
 export default function CrmPage() {
+  const [tab, setTab] = useState<CrmTab>('contacts');
   const [contacts, setContacts] = useState<Contact[]>([]);
-  const [showForm, setShowForm] = useState(false);
-  const [agents, setAgents] = useState<{ id: string; name: string }[]>([]);
-  const [form, setForm] = useState({
-    email: '', firstName: '', lastName: '', phone: '', source: 'manual', agentId: '',
-  });
+  const [companies, setCompanies] = useState<Company[]>([]);
+  const [deals, setDeals] = useState<Deal[]>([]);
+  const [activities, setActivities] = useState<Activity[]>([]);
+  const [search, setSearch] = useState('');
+  const [showLeadForm, setShowLeadForm] = useState(false);
+  const [leadForm, setLeadForm] = useState({ firstName: '', lastName: '', email: '', phone: '', source: 'website' });
   const [submitting, setSubmitting] = useState(false);
-  const [lastResult, setLastResult] = useState<SubmitLeadResult | null>(null);
-  const [orgId] = useState(() =>
-    typeof window !== 'undefined' ? localStorage.getItem('nexusos_org') : null,
-  );
+
+  const orgId = typeof window !== 'undefined' ? localStorage.getItem('orgId') : null;
 
   useEffect(() => {
     if (!orgId) return;
-    const token = getToken();
-    void apiRequest<{ data: Contact[] }>(`/orgs/${orgId}/crm/contacts`, {
-      token: token ?? undefined,
-    }).then((r) => setContacts(r.data)).catch(console.error);
+    void apiRequest<{ data: Contact[] }>(`/orgs/${orgId}/crm/contacts?search=${search}`).then((r) => setContacts(r.data)).catch(() => {});
+    void apiRequest<{ data: Company[] }>(`/orgs/${orgId}/crm/companies`).then((r) => setCompanies(r.data)).catch(() => {});
+    void apiRequest<Deal[]>(`/orgs/${orgId}/crm/deals`).then(setDeals).catch(() => {});
+    void apiRequest<{ data: Activity[] }>(`/orgs/${orgId}/crm/activities?limit=30`).then((r) => setActivities(r.data)).catch(() => {});
+  }, [orgId, search]);
 
-    void apiRequest<{ id: string; name: string }[]>(`/orgs/${orgId}/agents`, {
-      token: token ?? undefined,
-    }).then(setAgents).catch(console.error);
-  }, [orgId]);
-
-  const submitLead = async (e: React.FormEvent) => {
-    e.preventDefault();
+  async function submitLead() {
     if (!orgId) return;
     setSubmitting(true);
     try {
-      const token = getToken();
-      const result = await apiRequest<SubmitLeadResult>(`/orgs/${orgId}/crm/leads`, {
+      await apiRequest(`/orgs/${orgId}/crm/leads`, {
         method: 'POST',
-        body: JSON.stringify({
-          ...form,
-          agentId: form.agentId || undefined,
-        }),
-        token: token ?? undefined,
+        body: JSON.stringify(leadForm),
       });
-      setLastResult(result);
-      setShowForm(false);
-      setForm({ email: '', firstName: '', lastName: '', phone: '', source: 'manual', agentId: '' });
-      // Refresh contacts
-      const refreshed = await apiRequest<{ data: Contact[] }>(`/orgs/${orgId}/crm/contacts`, {
-        token: token ?? undefined,
-      });
-      setContacts(refreshed.data);
-    } catch (err) {
-      console.error(err);
+      setShowLeadForm(false);
+      setLeadForm({ firstName: '', lastName: '', email: '', phone: '', source: 'website' });
+      const r = await apiRequest<{ data: Contact[] }>(`/orgs/${orgId}/crm/contacts`);
+      setContacts(r.data);
+    } catch {
+      alert('Failed to submit lead');
     } finally {
       setSubmitting(false);
     }
-  };
+  }
+
+  async function refreshScore(contactId: string) {
+    if (!orgId) return;
+    const updated = await apiRequest<Contact>(`/orgs/${orgId}/crm/contacts/${contactId}/score`, { method: 'POST' });
+    setContacts((prev) => prev.map((c) => (c.id === updated.id ? updated : c)));
+  }
+
+  const tabs: CrmTab[] = ['contacts', 'companies', 'deals', 'activities'];
 
   return (
-    <div className="p-8">
-      <div className="mb-8 flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-white">CRM</h1>
-          <p className="mt-1 text-slate-400">{contacts.length} contacts</p>
-        </div>
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold text-white">CRM</h1>
         <button
-          onClick={() => setShowForm(true)}
-          className="rounded-lg bg-violet-600 px-4 py-2 text-sm font-medium text-white hover:bg-violet-700"
+          onClick={() => setShowLeadForm(true)}
+          className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-500"
         >
-          + Add Lead
+          + New Lead
         </button>
       </div>
 
-      {lastResult && (
-        <div className="mb-6 rounded-lg border border-green-800 bg-green-950/40 p-4 text-sm text-green-300">
-          Lead created.{' '}
-          {lastResult.agentRunId ? (
-            <>AI qualification run started — check <a href="/approvals" className="underline">Approvals</a> when it requests actions.</>
-          ) : (
-            'Install an AI employee to auto-qualify this lead.'
+      {/* Tab bar */}
+      <div className="flex gap-1 rounded-lg bg-white/5 p-1 w-fit">
+        {tabs.map((t) => (
+          <button
+            key={t}
+            onClick={() => setTab(t)}
+            className={`rounded-md px-4 py-1.5 text-sm font-medium capitalize transition-colors ${
+              tab === t ? 'bg-white/10 text-white' : 'text-gray-400 hover:text-white'
+            }`}
+          >
+            {t}
+          </button>
+        ))}
+      </div>
+
+      {/* Contacts */}
+      {tab === 'contacts' && (
+        <div className="space-y-4">
+          <input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search contacts…"
+            className="w-full max-w-sm rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          />
+          <div className="overflow-x-auto rounded-xl border border-white/10">
+            <table className="w-full text-sm text-left">
+              <thead className="border-b border-white/10 text-gray-400">
+                <tr>
+                  {['Name', 'Email', 'Source', 'Score', 'Status', ''].map((h) => (
+                    <th key={h} className="px-4 py-3 font-medium">{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-white/5">
+                {contacts.map((c) => (
+                  <tr key={c.id} className="hover:bg-white/5">
+                    <td className="px-4 py-3 text-white">{c.firstName} {c.lastName}</td>
+                    <td className="px-4 py-3 text-gray-400">{c.email}</td>
+                    <td className="px-4 py-3 text-gray-400 capitalize">{c.source ?? '—'}</td>
+                    <td className="px-4 py-3"><LeadScoreBadge score={c.leadScore} /></td>
+                    <td className="px-4 py-3 text-gray-400 capitalize">{c.leadStatus ?? '—'}</td>
+                    <td className="px-4 py-3">
+                      <button
+                        onClick={() => void refreshScore(c.id)}
+                        className="text-xs text-indigo-400 hover:text-indigo-300"
+                      >
+                        Score
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+                {contacts.length === 0 && (
+                  <tr>
+                    <td colSpan={6} className="px-4 py-8 text-center text-gray-500">No contacts yet</td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* Companies */}
+      {tab === 'companies' && (
+        <div className="overflow-x-auto rounded-xl border border-white/10">
+          <table className="w-full text-sm text-left">
+            <thead className="border-b border-white/10 text-gray-400">
+              <tr>
+                {['Name', 'Domain', 'Industry', 'Size', 'Created'].map((h) => (
+                  <th key={h} className="px-4 py-3 font-medium">{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-white/5">
+              {companies.map((co) => (
+                <tr key={co.id} className="hover:bg-white/5">
+                  <td className="px-4 py-3 text-white font-medium">{co.name}</td>
+                  <td className="px-4 py-3 text-gray-400">{co.domain ?? '—'}</td>
+                  <td className="px-4 py-3 text-gray-400">{co.industry ?? '—'}</td>
+                  <td className="px-4 py-3 text-gray-400">{co.size ?? '—'}</td>
+                  <td className="px-4 py-3 text-gray-500 text-xs">{new Date(co.createdAt).toLocaleDateString()}</td>
+                </tr>
+              ))}
+              {companies.length === 0 && (
+                <tr>
+                  <td colSpan={5} className="px-4 py-8 text-center text-gray-500">No companies yet</td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {/* Deals */}
+      {tab === 'deals' && (
+        <div className="overflow-x-auto rounded-xl border border-white/10">
+          <table className="w-full text-sm text-left">
+            <thead className="border-b border-white/10 text-gray-400">
+              <tr>
+                {['Deal', 'Contact', 'Stage', 'Value', 'Status'].map((h) => (
+                  <th key={h} className="px-4 py-3 font-medium">{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-white/5">
+              {deals.map((d) => (
+                <tr key={d.id} className="hover:bg-white/5">
+                  <td className="px-4 py-3 text-white">{d.name}</td>
+                  <td className="px-4 py-3 text-gray-400">
+                    {d.contact ? `${d.contact.firstName} ${d.contact.lastName}` : '—'}
+                  </td>
+                  <td className="px-4 py-3">
+                    <span
+                      className="rounded-full px-2 py-0.5 text-xs font-medium text-white"
+                      style={{ backgroundColor: d.stage.color + '33', color: d.stage.color }}
+                    >
+                      {d.stage.name}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3 text-gray-300">
+                    {d.value > 0 ? `${d.currency} ${d.value.toLocaleString()}` : '—'}
+                  </td>
+                  <td className="px-4 py-3 text-gray-400 capitalize">{d.status}</td>
+                </tr>
+              ))}
+              {deals.length === 0 && (
+                <tr>
+                  <td colSpan={5} className="px-4 py-8 text-center text-gray-500">No deals yet</td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {/* Activities */}
+      {tab === 'activities' && (
+        <div className="space-y-2">
+          {activities.map((a) => (
+            <div key={a.id} className="rounded-xl border border-white/10 bg-white/5 px-4 py-3">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium text-white">{a.subject}</span>
+                <span className="text-xs text-gray-500">{new Date(a.createdAt).toLocaleString()}</span>
+              </div>
+              <span className="mt-1 inline-block rounded bg-white/5 px-2 py-0.5 text-xs text-gray-400 capitalize">
+                {a.type.replace(/_/g, ' ')}
+              </span>
+              {a.body && <p className="mt-1 text-sm text-gray-400">{a.body}</p>}
+            </div>
+          ))}
+          {activities.length === 0 && (
+            <p className="py-8 text-center text-gray-500">No activities yet</p>
           )}
         </div>
       )}
 
-      {showForm && (
-        <div className="mb-8 rounded-xl border border-slate-700 bg-slate-900 p-6">
-          <h2 className="mb-4 font-semibold text-white">New Lead</h2>
-          <form onSubmit={(e) => void submitLead(e)} className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <div>
-              <label className="mb-1 block text-xs text-slate-400">First name *</label>
-              <input required value={form.firstName} onChange={(e) => setForm({ ...form, firstName: e.target.value })}
-                className="w-full rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-sm text-white focus:border-violet-500 focus:outline-none" />
+      {/* Lead form modal */}
+      {showLeadForm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-2xl border border-white/10 bg-gray-900 p-6">
+            <h2 className="text-lg font-semibold text-white">New Lead</h2>
+            <div className="mt-4 space-y-3">
+              {[
+                { key: 'firstName', label: 'First Name', type: 'text' },
+                { key: 'lastName', label: 'Last Name', type: 'text' },
+                { key: 'email', label: 'Email', type: 'email' },
+                { key: 'phone', label: 'Phone', type: 'tel' },
+              ].map(({ key, label, type }) => (
+                <div key={key}>
+                  <label className="block text-sm text-gray-400">{label}</label>
+                  <input
+                    type={type}
+                    value={(leadForm as Record<string, string>)[key]}
+                    onChange={(e) => setLeadForm((f) => ({ ...f, [key]: e.target.value }))}
+                    className="mt-1 w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  />
+                </div>
+              ))}
+              <div>
+                <label className="block text-sm text-gray-400">Source</label>
+                <select
+                  value={leadForm.source}
+                  onChange={(e) => setLeadForm((f) => ({ ...f, source: e.target.value }))}
+                  className="mt-1 w-full rounded-lg border border-white/10 bg-gray-800 px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                >
+                  {['website', 'referral', 'inbound', 'outbound', 'event', 'manual'].map((s) => (
+                    <option key={s} value={s}>{s}</option>
+                  ))}
+                </select>
+              </div>
             </div>
-            <div>
-              <label className="mb-1 block text-xs text-slate-400">Last name *</label>
-              <input required value={form.lastName} onChange={(e) => setForm({ ...form, lastName: e.target.value })}
-                className="w-full rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-sm text-white focus:border-violet-500 focus:outline-none" />
-            </div>
-            <div>
-              <label className="mb-1 block text-xs text-slate-400">Email *</label>
-              <input type="email" required value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })}
-                className="w-full rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-sm text-white focus:border-violet-500 focus:outline-none" />
-            </div>
-            <div>
-              <label className="mb-1 block text-xs text-slate-400">Phone</label>
-              <input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })}
-                className="w-full rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-sm text-white focus:border-violet-500 focus:outline-none" />
-            </div>
-            <div className="sm:col-span-2">
-              <label className="mb-1 block text-xs text-slate-400">Auto-qualify with AI employee (optional)</label>
-              <select value={form.agentId} onChange={(e) => setForm({ ...form, agentId: e.target.value })}
-                className="w-full rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-sm text-white focus:border-violet-500 focus:outline-none">
-                <option value="">— No auto-qualification —</option>
-                {agents.map((a) => (
-                  <option key={a.id} value={a.id}>{a.name}</option>
-                ))}
-              </select>
-            </div>
-            <div className="flex gap-3 sm:col-span-2">
-              <button type="submit" disabled={submitting}
-                className="rounded-lg bg-violet-600 px-4 py-2 text-sm font-medium text-white hover:bg-violet-700 disabled:opacity-50">
-                {submitting ? 'Submitting...' : 'Submit lead'}
-              </button>
-              <button type="button" onClick={() => setShowForm(false)}
-                className="rounded-lg border border-slate-600 px-4 py-2 text-sm text-slate-400 hover:bg-slate-800">
+            <div className="mt-5 flex gap-3">
+              <button
+                onClick={() => setShowLeadForm(false)}
+                className="flex-1 rounded-lg border border-white/10 py-2 text-sm text-gray-400 hover:text-white"
+              >
                 Cancel
               </button>
+              <button
+                onClick={() => void submitLead()}
+                disabled={submitting}
+                className="flex-1 rounded-lg bg-indigo-600 py-2 text-sm font-medium text-white hover:bg-indigo-500 disabled:opacity-50"
+              >
+                {submitting ? 'Saving…' : 'Submit Lead'}
+              </button>
             </div>
-          </form>
+          </div>
         </div>
       )}
-
-      <div className="rounded-xl border border-slate-800 bg-slate-900 overflow-hidden">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b border-slate-800 text-left">
-              <th className="px-4 py-3 font-medium text-slate-400">Name</th>
-              <th className="px-4 py-3 font-medium text-slate-400">Email</th>
-              <th className="px-4 py-3 font-medium text-slate-400">Status</th>
-              <th className="px-4 py-3 font-medium text-slate-400">Score</th>
-              <th className="px-4 py-3 font-medium text-slate-400">Source</th>
-            </tr>
-          </thead>
-          <tbody>
-            {contacts.length === 0 && (
-              <tr>
-                <td colSpan={5} className="px-4 py-10 text-center text-slate-500">
-                  No contacts yet. Add your first lead above.
-                </td>
-              </tr>
-            )}
-            {contacts.map((c) => (
-              <tr key={c.id} className="border-b border-slate-800/50 hover:bg-slate-800/30">
-                <td className="px-4 py-3 font-medium text-white">
-                  {c.firstName} {c.lastName}
-                </td>
-                <td className="px-4 py-3 text-slate-400">{c.email}</td>
-                <td className="px-4 py-3">
-                  <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_COLORS[c.leadStatus] ?? 'bg-slate-700 text-slate-300'}`}>
-                    {c.leadStatus}
-                  </span>
-                </td>
-                <td className="px-4 py-3 text-slate-400">{c.leadScore}</td>
-                <td className="px-4 py-3 text-slate-500">{c.source ?? '—'}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
     </div>
   );
 }

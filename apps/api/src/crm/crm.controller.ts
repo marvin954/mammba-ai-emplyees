@@ -1,5 +1,5 @@
 import {
-  Controller, Get, Post, Put, Delete,
+  Controller, Get, Post, Put, Delete, Patch,
   Body, Param, Query, UseGuards, Request,
 } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
@@ -20,7 +20,57 @@ export class CrmController {
     private readonly agentRuns: AgentRunsService,
   ) {}
 
-  // Contacts
+  // ─── Companies ─────────────────────────────────────────────────────────────
+
+  @Post('companies')
+  @ApiOperation({ summary: 'Create a company' })
+  createCompany(
+    @Param('orgId') orgId: string,
+    @Body() body: Parameters<CrmService['createCompany']>[1],
+    @Request() req: RequestWithUser,
+  ) {
+    return this.crm.createCompany(orgId, body, req.user.sub);
+  }
+
+  @Get('companies')
+  @ApiOperation({ summary: 'List companies' })
+  listCompanies(
+    @Param('orgId') orgId: string,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+    @Query('search') search?: string,
+  ) {
+    return this.crm.listCompanies(orgId, {
+      page: page ? Number(page) : undefined,
+      limit: limit ? Number(limit) : undefined,
+      search,
+    });
+  }
+
+  @Get('companies/:companyId')
+  @ApiOperation({ summary: 'Get company details' })
+  getCompany(@Param('orgId') orgId: string, @Param('companyId') companyId: string) {
+    return this.crm.getCompany(orgId, companyId);
+  }
+
+  @Put('companies/:companyId')
+  @ApiOperation({ summary: 'Update a company' })
+  updateCompany(
+    @Param('orgId') orgId: string,
+    @Param('companyId') companyId: string,
+    @Body() body: Parameters<CrmService['updateCompany']>[2],
+  ) {
+    return this.crm.updateCompany(orgId, companyId, body);
+  }
+
+  @Delete('companies/:companyId')
+  @ApiOperation({ summary: 'Delete a company' })
+  deleteCompany(@Param('orgId') orgId: string, @Param('companyId') companyId: string) {
+    return this.crm.deleteCompany(orgId, companyId);
+  }
+
+  // ─── Contacts ─────────────────────────────────────────────────────────────
+
   @Post('contacts')
   @ApiOperation({ summary: 'Create a contact' })
   createContact(
@@ -68,7 +118,14 @@ export class CrmController {
     return this.crm.deleteContact(orgId, contactId);
   }
 
-  // Deals
+  @Post('contacts/:contactId/score')
+  @ApiOperation({ summary: 'Refresh lead score for a contact' })
+  refreshLeadScore(@Param('orgId') orgId: string, @Param('contactId') contactId: string) {
+    return this.crm.refreshLeadScore(orgId, contactId);
+  }
+
+  // ─── Deals ────────────────────────────────────────────────────────────────
+
   @Post('deals')
   @ApiOperation({ summary: 'Create a deal' })
   createDeal(
@@ -89,7 +146,38 @@ export class CrmController {
     return this.crm.listDeals(orgId, { pipelineId, stageId });
   }
 
-  // ── MVP vertical slice: submit a lead and optionally trigger AI qualification ─
+  @Patch('deals/:dealId/stage')
+  @ApiOperation({ summary: 'Move a deal to a different pipeline stage' })
+  moveDealToStage(
+    @Param('orgId') orgId: string,
+    @Param('dealId') dealId: string,
+    @Body() body: { stageId: string },
+    @Request() req: RequestWithUser,
+  ) {
+    return this.crm.moveDealToStage(orgId, dealId, body.stageId, req.user.sub);
+  }
+
+  // ─── Activity feed ────────────────────────────────────────────────────────
+
+  @Get('activities')
+  @ApiOperation({ summary: 'List activities (optionally filtered by contact or deal)' })
+  listActivities(
+    @Param('orgId') orgId: string,
+    @Query('contactId') contactId?: string,
+    @Query('dealId') dealId?: string,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+  ) {
+    return this.crm.listActivities(orgId, {
+      contactId,
+      dealId,
+      page: page ? Number(page) : undefined,
+      limit: limit ? Number(limit) : undefined,
+    });
+  }
+
+  // ─── Lead submission ──────────────────────────────────────────────────────
+
   @Post('leads')
   @ApiOperation({ summary: 'Submit a new lead — optionally triggers AI qualification' })
   async submitLead(

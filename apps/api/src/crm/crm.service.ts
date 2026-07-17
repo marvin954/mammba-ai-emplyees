@@ -1,6 +1,18 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaClient } from '@nexusos/database';
 import { z } from 'zod';
+
+const createCompanySchema = z.object({
+  name: z.string().min(1).max(200),
+  domain: z.string().max(200).optional(),
+  industry: z.string().optional(),
+  size: z.string().optional(),
+  website: z.string().url().optional(),
+  phone: z.string().max(30).optional(),
+  description: z.string().max(2000).optional(),
+  tags: z.array(z.string()).default([]),
+  customFields: z.record(z.unknown()).default({}),
+});
 
 const createContactSchema = z.object({
   email: z.string().email(),
@@ -26,6 +38,8 @@ const createDealSchema = z.object({
   expectedCloseDate: z.string().datetime().optional(),
 });
 
+export type CreateCompanyInput = z.infer<typeof createCompanySchema>;
+export type UpdateCompanyInput = Partial<CreateCompanyInput>;
 export type CreateContactInput = z.infer<typeof createContactSchema>;
 export type UpdateContactInput = z.infer<typeof updateContactSchema>;
 export type CreateDealInput = z.infer<typeof createDealSchema>;
@@ -33,6 +47,56 @@ export type CreateDealInput = z.infer<typeof createDealSchema>;
 @Injectable()
 export class CrmService {
   constructor(private readonly db: PrismaClient) {}
+
+  // ─── Companies ────────────────────────────────────────────────────────────
+
+  async createCompany(orgId: string, input: CreateCompanyInput, createdById: string) {
+    const parsed = createCompanySchema.parse(input);
+    return this.db.company.create({
+      data: { ...parsed, orgId, ownerId: createdById },
+    });
+  }
+
+  async listCompanies(
+    orgId: string,
+    options: { page?: number; limit?: number; search?: string } = {},
+  ) {
+    const { page = 1, limit = 50, search } = options;
+    const skip = (page - 1) * limit;
+    const where = {
+      orgId,
+      deletedAt: null,
+      ...(search ? { name: { contains: search, mode: 'insensitive' as const } } : {}),
+    };
+    const [data, total] = await Promise.all([
+      this.db.company.findMany({ where, skip, take: limit, orderBy: { createdAt: 'desc' } }),
+      this.db.company.count({ where }),
+    ]);
+    return { data, total, page, limit, hasMore: skip + limit < total };
+  }
+
+  async getCompany(orgId: string, companyId: string) {
+    const company = await this.db.company.findFirst({
+      where: { id: companyId, orgId, deletedAt: null },
+      include: {
+        contacts: { where: { deletedAt: null }, take: 50 },
+        deals: { where: { deletedAt: null }, include: { stage: true } },
+      },
+    });
+    if (!company) throw new NotFoundException('Company not found');
+    return company;
+  }
+
+  async updateCompany(orgId: string, companyId: string, input: UpdateCompanyInput) {
+    await this.assertCompany(orgId, companyId);
+    const parsed = createCompanySchema.partial().parse(input);
+    return this.db.company.update({ where: { id: companyId }, data: parsed });
+  }
+
+  async deleteCompany(orgId: string, companyId: string) {
+    await this.assertCompany(orgId, companyId);
+    return this.db.company.update({ where: { id: companyId }, data: { deletedAt: new Date() } });
+  }
 
   // ─── Contacts ─────────────────────────────────────────────────────────────
 
@@ -135,6 +199,44 @@ export class CrmService {
     });
   }
 
+  async moveDealToStage(
+    orgId: string,
+    dealId: string,
+    stageId: string,
+    actorId: string,
+  ) {
+    const deal = await this.db.deal.findFirst({
+      where: { id: dealId, orgId, deletedAt: null },
+      include: { stage: true },
+    });
+    if (!deal) throw new NotFoundException('Deal not found');
+
+    const stage = await this.db.pipelineStage.findFirst({
+      where: { id: stageId, pipelineId: deal.pipelineId },
+    });
+    if (!stage) throw new BadRequestException('Stage does not belong to this pipeline');
+
+    const previousStageId = deal.stageId;
+    const updated = await this.db.deal.update({
+      where: { id: dealId },
+      data: {
+        stageId,
+        status: stage.name === 'Closed Won' ? 'won' : stage.name === 'Closed Lost' ? 'lost' : 'open',
+        closedAt: ['Closed Won', 'Closed Lost'].includes(stage.name) ? new Date() : null,
+      },
+      include: { stage: true },
+    });
+
+    await this.createActivity(orgId, {
+      type: 'stage_change',
+      subject: `Deal moved to ${stage.name}`,
+      dealId,
+      metadata: { previousStageId, newStageId: stageId },
+    }, actorId);
+
+    return updated;
+  }
+
   // ─── Activities ──────────────────────────────────────────────────────────
 
   async createActivity(
@@ -191,6 +293,57 @@ export class CrmService {
       },
       include: { stages: true },
     });
+  }
+
+  // ─── Activity feed ────────────────────────────────────────────────────────
+
+  async listActivities(
+    orgId: string,
+    options: { contactId?: string; dealId?: string; page?: number; limit?: number } = {},
+  ) {
+    const { page = 1, limit = 50, contactId, dealId } = options;
+    const skip = (page - 1) * limit;
+    const where = {
+      orgId,
+      ...(contactId ? { contactId } : {}),
+      ...(dealId ? { dealId } : {}),
+    };
+    const [data, total] = await Promise.all([
+      this.db.activity.findMany({ where, skip, take: limit, orderBy: { createdAt: 'desc' } }),
+      this.db.activity.count({ where }),
+    ]);
+    return { data, total, page, limit, hasMore: skip + limit < total };
+  }
+
+  // ─── Lead scoring ─────────────────────────────────────────────────────────
+
+  computeLeadScore(contact: {
+    email?: string | null;
+    phone?: string | null;
+    companyId?: string | null;
+    source?: string | null;
+    activities?: unknown[];
+  }): number {
+    let score = 0;
+    if (contact.email) score += 20;
+    if (contact.phone) score += 15;
+    if (contact.companyId) score += 20;
+    if (contact.source === 'website') score += 10;
+    else if (contact.source === 'referral') score += 25;
+    else if (contact.source === 'inbound') score += 15;
+    const activityCount = contact.activities?.length ?? 0;
+    score += Math.min(activityCount * 5, 20);
+    return Math.min(score, 100);
+  }
+
+  async refreshLeadScore(orgId: string, contactId: string) {
+    const contact = await this.db.contact.findFirst({
+      where: { id: contactId, orgId, deletedAt: null },
+      include: { activities: true },
+    });
+    if (!contact) throw new NotFoundException('Contact not found');
+    const score = this.computeLeadScore(contact);
+    return this.db.contact.update({ where: { id: contactId }, data: { leadScore: score } });
   }
 
   // ─── Lead submission (MVP vertical slice) ─────────────────────────────────
@@ -256,6 +409,14 @@ export class CrmService {
     }
 
     return { contactId: contact.id, dealId };
+  }
+
+  private async assertCompany(orgId: string, companyId: string) {
+    const company = await this.db.company.findFirst({
+      where: { id: companyId, orgId, deletedAt: null },
+    });
+    if (!company) throw new NotFoundException('Company not found');
+    return company;
   }
 
   private async assertContact(orgId: string, contactId: string) {
