@@ -1,0 +1,569 @@
+generator client {
+  provider        = "prisma-client-js"
+  output          = "../src/generated/prisma"
+  previewFeatures = ["postgresqlExtensions"]
+}
+
+datasource db {
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  extensions = [pgvector(map: "vector"), citext(map: "citext")]
+}
+
+// ─── Organizations & Users ────────────────────────────────────────────────
+
+model Organization {
+  id           String   @id @default(cuid())
+  name         String
+  slug         String   @unique
+  industry     String   @default("other")
+  plan         String   @default("starter")
+  status       String   @default("trial")
+  ownerId      String
+  parentOrgId  String?
+  logoUrl      String?
+  domain       String?
+  settings     Json     @default("{}")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  deletedAt    DateTime?
+
+  owner        User            @relation("OrgOwner", fields: [ownerId], references: [id])
+  parentOrg    Organization?   @relation("ParentOrg", fields: [parentOrgId], references: [id])
+  childOrgs    Organization[]  @relation("ParentOrg")
+  memberships  Membership[]
+  invitations  Invitation[]
+  agents       Agent[]
+  agentRuns    AgentRun[]
+  approvals    Approval[]
+  contacts     Contact[]
+  companies    Company[]
+  pipelines    Pipeline[]
+  deals        Deal[]
+  activities   Activity[]
+  credentials  ApiCredential[]
+  auditEvents  AuditEvent[]
+  usageRecords UsageRecord[]
+  subscription Subscription?
+  workflows    Workflow[]
+  knowledgeSources KnowledgeSource[]
+
+  @@index([slug])
+  @@index([ownerId])
+  @@index([parentOrgId])
+  @@map("organizations")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  name          String?
+  passwordHash  String?
+  avatarUrl     String?
+  emailVerified Boolean   @default(false)
+  mfaEnabled    Boolean   @default(false)
+  mfaSecret     String?
+  status        String    @default("active")
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  deletedAt     DateTime?
+
+  ownedOrgs     Organization[] @relation("OrgOwner")
+  memberships   Membership[]
+  invitationsSent Invitation[] @relation("InvitedBy")
+  approvals     Approval[]     @relation("Reviewer")
+  auditEvents   AuditEvent[]   @relation("Actor")
+  oauthAccounts OAuthAccount[]
+
+  @@index([email])
+  @@map("users")
+}
+
+model OAuthAccount {
+  id           String   @id @default(cuid())
+  userId       String
+  provider     String
+  providerAccountId String
+  accessToken  String?
+  refreshToken String?
+  expiresAt    DateTime?
+  createdAt    DateTime @default(now())
+
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+  @@map("oauth_accounts")
+}
+
+model Membership {
+  id          String    @id @default(cuid())
+  userId      String
+  orgId       String
+  role        String    @default("member")
+  invitedBy   String?
+  acceptedAt  DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  org         Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, orgId])
+  @@index([orgId])
+  @@index([userId])
+  @@map("memberships")
+}
+
+model Invitation {
+  id          String    @id @default(cuid())
+  orgId       String
+  email       String
+  role        String    @default("member")
+  invitedById String
+  token       String    @unique
+  expiresAt   DateTime
+  acceptedAt  DateTime?
+  createdAt   DateTime  @default(now())
+
+  org         Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  invitedBy   User         @relation("InvitedBy", fields: [invitedById], references: [id])
+
+  @@index([orgId])
+  @@index([token])
+  @@map("invitations")
+}
+
+// ─── AI Agents ───────────────────────────────────────────────────────────────
+
+model AgentTemplate {
+  id                  String   @id @default(cuid())
+  name                String
+  role                String
+  description         String
+  department          String
+  capabilities        String[]
+  defaultSystemPrompt String   @db.Text
+  defaultModel        String
+  defaultTemperature  Float    @default(0.7)
+  defaultTools        String[]
+  requiredPlan        String   @default("starter")
+  version             String   @default("1.0.0")
+  isActive            Boolean  @default(true)
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  agents              Agent[]
+
+  @@map("agent_templates")
+}
+
+model Agent {
+  id                  String    @id @default(cuid())
+  orgId               String
+  templateId          String
+  name                String
+  role                String
+  description         String
+  department          String
+  avatarUrl           String?
+  systemPrompt        String    @db.Text
+  goals               String[]
+  allowedTools        String[]
+  prohibitedActions   String[]
+  approvalPolicy      String    @default("optional")
+  modelProvider       String    @default("anthropic")
+  modelName           String    @default("claude-sonnet-4-6")
+  temperature         Float     @default(0.7)
+  maxTokens           Int       @default(4096)
+  status              String    @default("active")
+  monthlyCostLimitUsd Float?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+  deletedAt           DateTime?
+
+  org                 Organization   @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  template            AgentTemplate  @relation(fields: [templateId], references: [id])
+  runs                AgentRun[]
+
+  @@index([orgId])
+  @@index([templateId])
+  @@map("agents")
+}
+
+model AgentRun {
+  id            String    @id @default(cuid())
+  orgId         String
+  agentId       String
+  taskType      String
+  status        String    @default("queued")
+  input         Json
+  output        Json?
+  errorMessage  String?
+  toolCalls     Json      @default("[]")
+  inputTokens   Int       @default(0)
+  outputTokens  Int       @default(0)
+  costUsd       Float     @default(0)
+  durationMs    Int?
+  initiatedById String
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  org           Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  agent         Agent        @relation(fields: [agentId], references: [id])
+  approval      Approval?
+
+  @@index([orgId])
+  @@index([agentId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("agent_runs")
+}
+
+model Approval {
+  id               String    @id @default(cuid())
+  orgId            String
+  agentRunId       String    @unique
+  requestedAction  String
+  reason           String    @db.Text
+  expectedOutcome  String    @db.Text
+  dataInvolved     Json      @default("{}")
+  estimatedCostUsd Float?
+  riskLevel        String    @default("medium")
+  status           String    @default("pending")
+  reviewerId       String?
+  reviewedAt       DateTime?
+  reviewNote       String?
+  expiresAt        DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  org              Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  agentRun         AgentRun     @relation(fields: [agentRunId], references: [id])
+  reviewer         User?        @relation("Reviewer", fields: [reviewerId], references: [id])
+
+  @@index([orgId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("approvals")
+}
+
+// ─── CRM ─────────────────────────────────────────────────────────────────────
+
+model Contact {
+  id           String    @id @default(cuid())
+  orgId        String
+  email        String
+  firstName    String
+  lastName     String
+  phone        String?
+  companyId    String?
+  ownerId      String?
+  leadStatus   String    @default("new")
+  leadScore    Int       @default(0)
+  source       String?
+  tags         String[]
+  customFields Json      @default("{}")
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  deletedAt    DateTime?
+
+  org          Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  company      Company?     @relation(fields: [companyId], references: [id])
+  deals        Deal[]
+  activities   Activity[]
+
+  @@unique([orgId, email])
+  @@index([orgId])
+  @@index([companyId])
+  @@index([leadStatus])
+  @@map("contacts")
+}
+
+model Company {
+  id           String    @id @default(cuid())
+  orgId        String
+  name         String
+  domain       String?
+  industry     String?
+  size         String?
+  phone        String?
+  address      String?
+  ownerId      String?
+  tags         String[]
+  customFields Json      @default("{}")
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  deletedAt    DateTime?
+
+  org          Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  contacts     Contact[]
+  deals        Deal[]
+  activities   Activity[]
+
+  @@index([orgId])
+  @@index([domain])
+  @@map("companies")
+}
+
+model Pipeline {
+  id        String   @id @default(cuid())
+  orgId     String
+  name      String
+  isDefault Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  org       Organization    @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  stages    PipelineStage[]
+  deals     Deal[]
+
+  @@index([orgId])
+  @@map("pipelines")
+}
+
+model PipelineStage {
+  id          String   @id @default(cuid())
+  pipelineId  String
+  name        String
+  order       Int
+  probability Int      @default(50)
+  color       String   @default("#6366f1")
+  createdAt   DateTime @default(now())
+
+  pipeline    Pipeline @relation(fields: [pipelineId], references: [id], onDelete: Cascade)
+  deals       Deal[]
+
+  @@index([pipelineId])
+  @@map("pipeline_stages")
+}
+
+model Deal {
+  id               String    @id @default(cuid())
+  orgId            String
+  name             String
+  contactId        String?
+  companyId        String?
+  pipelineId       String
+  stageId          String
+  status           String    @default("open")
+  value            Float     @default(0)
+  currency         String    @default("USD")
+  expectedCloseDate DateTime?
+  ownerId          String?
+  tags             String[]
+  customFields     Json      @default("{}")
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  deletedAt        DateTime?
+
+  org              Organization  @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  contact          Contact?      @relation(fields: [contactId], references: [id])
+  company          Company?      @relation(fields: [companyId], references: [id])
+  pipeline         Pipeline      @relation(fields: [pipelineId], references: [id])
+  stage            PipelineStage @relation(fields: [stageId], references: [id])
+  activities       Activity[]
+
+  @@index([orgId])
+  @@index([pipelineId])
+  @@index([stageId])
+  @@index([status])
+  @@map("deals")
+}
+
+model Activity {
+  id           String   @id @default(cuid())
+  orgId        String
+  type         String
+  subject      String
+  body         String?  @db.Text
+  contactId    String?
+  companyId    String?
+  dealId       String?
+  actorId      String?
+  agentId      String?
+  agentRunId   String?
+  metadata     Json     @default("{}")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  org          Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  contact      Contact?     @relation(fields: [contactId], references: [id])
+  company      Company?     @relation(fields: [companyId], references: [id])
+  deal         Deal?        @relation(fields: [dealId], references: [id])
+
+  @@index([orgId])
+  @@index([contactId])
+  @@index([dealId])
+  @@index([createdAt])
+  @@map("activities")
+}
+
+// ─── Credentials & Integrations ──────────────────────────────────────────────
+
+model ApiCredential {
+  id             String    @id @default(cuid())
+  orgId          String
+  name           String
+  provider       String
+  encryptedValue String    @db.Text
+  metadata       Json      @default("{}")
+  createdById    String
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  deletedAt      DateTime?
+
+  org            Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+
+  @@unique([orgId, provider, name])
+  @@index([orgId])
+  @@map("api_credentials")
+}
+
+// ─── Workflows ────────────────────────────────────────────────────────────────
+
+model Workflow {
+  id             String   @id @default(cuid())
+  orgId          String
+  name           String
+  description    String?
+  n8nWorkflowId  String?
+  templateId     String?
+  config         Json     @default("{}")
+  isActive       Boolean  @default(false)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  org            Organization        @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  executions     WorkflowExecution[]
+
+  @@index([orgId])
+  @@map("workflows")
+}
+
+model WorkflowExecution {
+  id          String   @id @default(cuid())
+  workflowId  String
+  orgId       String
+  status      String   @default("running")
+  input       Json     @default("{}")
+  output      Json?
+  error       String?
+  durationMs  Int?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  workflow    Workflow @relation(fields: [workflowId], references: [id])
+
+  @@index([workflowId])
+  @@index([orgId])
+  @@index([status])
+  @@map("workflow_executions")
+}
+
+// ─── Knowledge ────────────────────────────────────────────────────────────────
+
+model KnowledgeSource {
+  id           String   @id @default(cuid())
+  orgId        String
+  name         String
+  type         String
+  url          String?
+  status       String   @default("pending")
+  metadata     Json     @default("{}")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  org          Organization     @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  chunks       KnowledgeChunk[]
+
+  @@index([orgId])
+  @@map("knowledge_sources")
+}
+
+model KnowledgeChunk {
+  id         String                      @id @default(cuid())
+  sourceId   String
+  orgId      String
+  content    String                      @db.Text
+  embedding  Unsupported("vector(1536)")?
+  metadata   Json                        @default("{}")
+  chunkIndex Int
+  createdAt  DateTime                    @default(now())
+
+  source     KnowledgeSource @relation(fields: [sourceId], references: [id], onDelete: Cascade)
+
+  @@index([sourceId])
+  @@index([orgId])
+  @@map("knowledge_chunks")
+}
+
+// ─── Billing ─────────────────────────────────────────────────────────────────
+
+model Subscription {
+  id                    String   @id @default(cuid())
+  orgId                 String   @unique
+  stripeSubscriptionId  String   @unique
+  stripeCustomerId      String
+  plan                  String
+  status                String
+  currentPeriodStart    DateTime
+  currentPeriodEnd      DateTime
+  trialEndsAt           DateTime?
+  seats                 Int      @default(1)
+  cancelAtPeriodEnd     Boolean  @default(false)
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  org                   Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+
+  @@map("subscriptions")
+}
+
+model UsageRecord {
+  id           String   @id @default(cuid())
+  orgId        String
+  userId       String?
+  agentId      String?
+  resourceType String
+  quantity     Float
+  unitCostUsd  Float
+  totalCostUsd Float
+  provider     String?
+  model        String?
+  metadata     Json     @default("{}")
+  createdAt    DateTime @default(now())
+
+  org          Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+
+  @@index([orgId])
+  @@index([createdAt])
+  @@index([resourceType])
+  @@map("usage_records")
+}
+
+// ─── Audit ────────────────────────────────────────────────────────────────────
+
+model AuditEvent {
+  id           String   @id @default(cuid())
+  orgId        String
+  actorId      String?
+  actorType    String   @default("user")
+  action       String
+  resourceType String
+  resourceId   String?
+  payload      Json     @default("{}")
+  ipAddress    String?
+  userAgent    String?
+  requestId    String?
+  createdAt    DateTime @default(now())
+
+  org          Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  actor        User?        @relation("Actor", fields: [actorId], references: [id])
+
+  @@index([orgId])
+  @@index([actorId])
+  @@index([action])
+  @@index([createdAt])
+  @@map("audit_events")
+}
