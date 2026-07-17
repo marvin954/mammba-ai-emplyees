@@ -47,6 +47,8 @@ model Organization {
   subscription Subscription?
   workflows    Workflow[]
   knowledgeSources KnowledgeSource[]
+  notifications    Notification[]
+  emailDrafts      EmailDraft[]
 
   @@index([slug])
   @@index([ownerId])
@@ -540,6 +542,85 @@ model UsageRecord {
   @@index([createdAt])
   @@index([resourceType])
   @@map("usage_records")
+}
+
+// ─── Notifications ────────────────────────────────────────────────────────────
+
+model Notification {
+  id           String    @id @default(cuid())
+  orgId        String
+  userId       String
+  type         String
+  title        String
+  body         String?
+  actionUrl    String?
+  read         Boolean   @default(false)
+  readAt       DateTime?
+  metadata     Json      @default("{}")
+  createdAt    DateTime  @default(now())
+
+  org          Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+
+  @@index([orgId])
+  @@index([userId])
+  @@index([read])
+  @@index([createdAt])
+  @@map("notifications")
+}
+
+// ─── Email Drafts ─────────────────────────────────────────────────────────────
+// Tracks agent-drafted emails through the approval → send lifecycle.
+
+model EmailDraft {
+  id           String    @id @default(cuid())
+  orgId        String
+  agentRunId   String?
+  agentId      String?
+  toAddress    String
+  ccAddress    String?
+  subject      String
+  bodyHtml     String    @db.Text
+  bodyText     String    @db.Text
+  fromName     String?
+  replyTo      String?
+  // draft → pending_approval → approved → sent | rejected
+  status       String    @default("draft")
+  approvalId   String?   @unique
+  messageId    String?
+  sentAt       DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  org          Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+
+  @@index([orgId])
+  @@index([agentRunId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("email_drafts")
+}
+
+// ─── Calendar Integration ─────────────────────────────────────────────────────
+
+model CalendarIntegration {
+  id           String    @id @default(cuid())
+  orgId        String
+  userId       String
+  provider     String    // 'google' | 'outlook' | 'caldav'
+  accountEmail String
+  accessToken  String    @db.Text
+  refreshToken String?   @db.Text
+  expiresAt    DateTime?
+  scopes       String[]
+  isActive     Boolean   @default(true)
+  metadata     Json      @default("{}")
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@unique([orgId, userId, provider])
+  @@index([orgId])
+  @@index([userId])
+  @@map("calendar_integrations")
 }
 
 // ─── Audit ────────────────────────────────────────────────────────────────────

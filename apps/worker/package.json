@@ -22,7 +22,8 @@
     "@nexusos/audit": "workspace:*",
     "@nexusos/events": "workspace:*",
     "@nexusos/n8n-adapter": "workspace:*",
-    "@nexusos/rapidapi-gateway": "workspace:*"
+    "@nexusos/rapidapi-gateway": "workspace:*",
+    "@nexusos/email": "workspace:*"
   },
   "devDependencies": {
     "tsx": "^4.16.0",

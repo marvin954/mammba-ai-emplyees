@@ -7,6 +7,9 @@ import { AgentsModule } from './agents/agents.module.js';
 import { CrmModule } from './crm/crm.module.js';
 import { ApprovalsModule } from './approvals/approvals.module.js';
 import { AgentRunsModule } from './agent-runs/agent-runs.module.js';
+import { NotificationsModule } from './notifications/notifications.module.js';
+import { EmailDraftsModule } from './email-drafts/email-drafts.module.js';
+import { CalendarModule } from './calendar/calendar.module.js';
 import { DatabaseModule } from './common/database.module.js';
 
 @Module({
@@ -25,6 +28,9 @@ import { DatabaseModule } from './common/database.module.js';
     CrmModule,
     ApprovalsModule,
     AgentRunsModule,
+    NotificationsModule,
+    EmailDraftsModule,
+    CalendarModule,
   ],
 })
 export class AppModule {}

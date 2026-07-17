@@ -7,6 +7,7 @@ import { AgentRunProcessor } from './processors/agent-run.processor.js';
 import { ApprovalProcessor } from './processors/approval.processor.js';
 import { WorkflowProcessor } from './processors/workflow.processor.js';
 import { EnrichmentProcessor } from './processors/enrichment.processor.js';
+import { EmailProcessor } from './processors/email.processor.js';
 import { createWorker } from './queues/worker-factory.js';
 
 async function bootstrap(): Promise<void> {
@@ -85,12 +86,23 @@ async function bootstrap(): Promise<void> {
     Math.ceil(concurrency / 2), // RapidAPI rate-limited; lower concurrency
   );
 
+  // ── Email worker ─────────────────────────────────────────────────────────────
+  const emailProcessor = new EmailProcessor(db, audit);
+
+  const emailWorker = createWorker(
+    QUEUE_NAMES.EMAIL,
+    (job) => emailProcessor.process(job),
+    redisConfig,
+    Math.ceil(concurrency / 2),
+  );
+
   // ── Event logging ────────────────────────────────────────────────────────────
   const allWorkers = [
     { name: QUEUE_NAMES.AGENT_RUNS, worker: agentRunWorker },
     { name: QUEUE_NAMES.APPROVALS, worker: approvalWorker },
     { name: QUEUE_NAMES.WORKFLOWS, worker: workflowWorker },
     { name: QUEUE_NAMES.ENRICHMENT, worker: enrichmentWorker },
+    { name: QUEUE_NAMES.EMAIL, worker: emailWorker },
   ];
 
   for (const { name, worker } of allWorkers) {
