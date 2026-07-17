@@ -10,6 +10,7 @@ const navItems = [
   { href: '/crm', label: 'CRM', icon: '👥' },
   { href: '/email-drafts', label: 'Email Drafts', icon: '✉️' },
   { href: '/calendar', label: 'Calendar', icon: '📅' },
+  { href: '/knowledge', label: 'Knowledge', icon: '🧠' },
   { href: '/sales', label: 'Sales', icon: '📈' },
   { href: '/marketing', label: 'Marketing', icon: '📣' },
   { href: '/support', label: 'Support', icon: '💬' },
