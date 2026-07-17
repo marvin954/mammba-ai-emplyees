@@ -4,6 +4,9 @@ import { AgentRunner, ToolRegistry, registerBuiltinTools } from '@nexusos/agent-
 import { AuditService } from '@nexusos/audit';
 import { QUEUE_NAMES } from '@nexusos/events';
 import { AgentRunProcessor } from './processors/agent-run.processor.js';
+import { ApprovalProcessor } from './processors/approval.processor.js';
+import { WorkflowProcessor } from './processors/workflow.processor.js';
+import { EnrichmentProcessor } from './processors/enrichment.processor.js';
 import { createWorker } from './queues/worker-factory.js';
 
 async function bootstrap(): Promise<void> {
@@ -25,8 +28,6 @@ async function bootstrap(): Promise<void> {
   registerBuiltinTools(registry, db);
 
   const audit = new AuditService(db);
-  const runner = new AgentRunner(db, gateway, registry, audit);
-  const agentRunProcessor = new AgentRunProcessor(runner);
 
   const redisUrl = process.env['REDIS_URL'] ?? 'redis://localhost:6379';
   const redisConfig = {
@@ -37,6 +38,10 @@ async function bootstrap(): Promise<void> {
 
   const concurrency = Number(process.env['WORKER_CONCURRENCY'] ?? 4);
 
+  // ── Agent run worker ────────────────────────────────────────────────────────
+  const runner = new AgentRunner(db, gateway, registry, audit);
+  const agentRunProcessor = new AgentRunProcessor(runner);
+
   const agentRunWorker = createWorker(
     QUEUE_NAMES.AGENT_RUNS,
     (job) => agentRunProcessor.process(job),
@@ -44,20 +49,62 @@ async function bootstrap(): Promise<void> {
     concurrency,
   );
 
-  agentRunWorker.on('completed', (job) => {
-    console.warn(`[Worker] Job ${job.id} completed`);
-  });
+  // ── Approval worker ─────────────────────────────────────────────────────────
+  const approvalProcessor = new ApprovalProcessor(db, audit, redisConfig);
 
-  agentRunWorker.on('failed', (job, err) => {
-    console.error(`[Worker] Job ${job?.id} failed:`, err.message);
-  });
+  const approvalWorker = createWorker(
+    QUEUE_NAMES.APPROVALS,
+    (job) => approvalProcessor.process(job),
+    redisConfig,
+    concurrency,
+  );
+
+  // ── Workflow worker ─────────────────────────────────────────────────────────
+  const n8nBaseUrl = process.env['N8N_BASE_URL'] ?? 'http://localhost:5678';
+  const n8nApiKey = process.env['N8N_API_KEY'] ?? '';
+  const n8nWebhookSecret = process.env['N8N_WEBHOOK_SECRET'] ?? '';
+
+  const workflowProcessor = new WorkflowProcessor(db, audit, n8nBaseUrl, n8nApiKey, n8nWebhookSecret);
+
+  const workflowWorker = createWorker(
+    QUEUE_NAMES.WORKFLOWS,
+    (job) => workflowProcessor.process(job),
+    redisConfig,
+    Math.ceil(concurrency / 2), // workflow calls are slower; lower concurrency
+  );
+
+  // ── Enrichment worker ───────────────────────────────────────────────────────
+  const rapidApiKey = process.env['RAPIDAPI_KEY'] ?? '';
+
+  const enrichmentProcessor = new EnrichmentProcessor(db, audit, rapidApiKey);
+
+  const enrichmentWorker = createWorker(
+    QUEUE_NAMES.ENRICHMENT,
+    (job) => enrichmentProcessor.process(job),
+    redisConfig,
+    Math.ceil(concurrency / 2), // RapidAPI rate-limited; lower concurrency
+  );
+
+  // ── Event logging ────────────────────────────────────────────────────────────
+  const allWorkers = [
+    { name: QUEUE_NAMES.AGENT_RUNS, worker: agentRunWorker },
+    { name: QUEUE_NAMES.APPROVALS, worker: approvalWorker },
+    { name: QUEUE_NAMES.WORKFLOWS, worker: workflowWorker },
+    { name: QUEUE_NAMES.ENRICHMENT, worker: enrichmentWorker },
+  ];
+
+  for (const { name, worker } of allWorkers) {
+    worker.on('completed', (job) => console.warn(`[${name}] Job ${job.id} completed`));
+    worker.on('failed', (job, err) => console.error(`[${name}] Job ${job?.id} failed:`, err.message));
+  }
 
   console.warn(`[Worker] Listening on queues: ${Object.values(QUEUE_NAMES).join(', ')}`);
 
-  // Graceful shutdown
+  // ── Graceful shutdown ────────────────────────────────────────────────────────
   process.on('SIGTERM', async () => {
     console.warn('[Worker] SIGTERM received — closing gracefully');
-    await agentRunWorker.close();
+    await Promise.all(allWorkers.map(({ worker }) => worker.close()));
+    await approvalProcessor.close();
     await db.$disconnect();
     process.exit(0);
   });

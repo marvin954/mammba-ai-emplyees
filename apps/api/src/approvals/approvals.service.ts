@@ -1,9 +1,16 @@
-import { Injectable, NotFoundException, ForbiddenException, BadRequestException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { InjectQueue } from '@nestjs/bull';
+import type { Queue } from 'bull';
 import { PrismaClient } from '@nexusos/database';
+import { QUEUE_NAMES } from '@nexusos/events';
+import type { ApprovalCompletedJob } from '@nexusos/events';
 
 @Injectable()
 export class ApprovalsService {
-  constructor(private readonly db: PrismaClient) {}
+  constructor(
+    private readonly db: PrismaClient,
+    @InjectQueue(QUEUE_NAMES.APPROVALS) private readonly approvalsQueue: Queue,
+  ) {}
 
   async list(orgId: string, options: { status?: string; limit?: number } = {}) {
     return this.db.approval.findMany({
@@ -39,7 +46,7 @@ export class ApprovalsService {
       throw new BadRequestException('Approval has expired');
     }
 
-    return this.db.approval.update({
+    const updated = await this.db.approval.update({
       where: { id: approvalId },
       data: {
         status: 'approved',
@@ -48,12 +55,16 @@ export class ApprovalsService {
         reviewNote: note ?? null,
       },
     });
+
+    await this.enqueueDecision(orgId, approvalId, approval.agentRunId, reviewerId, 'approved');
+
+    return updated;
   }
 
   async reject(orgId: string, approvalId: string, reviewerId: string, note?: string) {
-    await this.assertPending(orgId, approvalId);
+    const approval = await this.assertPending(orgId, approvalId);
 
-    return this.db.approval.update({
+    const updated = await this.db.approval.update({
       where: { id: approvalId },
       data: {
         status: 'rejected',
@@ -61,6 +72,35 @@ export class ApprovalsService {
         reviewedAt: new Date(),
         reviewNote: note ?? null,
       },
+    });
+
+    await this.enqueueDecision(orgId, approvalId, approval.agentRunId, reviewerId, 'rejected');
+
+    return updated;
+  }
+
+  private async enqueueDecision(
+    orgId: string,
+    approvalId: string,
+    agentRunId: string,
+    reviewerId: string,
+    decision: 'approved' | 'rejected',
+  ) {
+    const payload: ApprovalCompletedJob = {
+      type: 'approval.completed',
+      orgId,
+      approvalId,
+      agentRunId,
+      decision,
+      reviewerId,
+    };
+
+    await this.approvalsQueue.add(payload, {
+      jobId: `approval-${approvalId}`,
+      attempts: 3,
+      backoff: { type: 'exponential', delay: 2000 },
+      removeOnComplete: true,
+      removeOnFail: false,
     });
   }
 

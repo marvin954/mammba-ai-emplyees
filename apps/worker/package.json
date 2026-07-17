@@ -20,7 +20,9 @@
     "@nexusos/agent-runtime": "workspace:*",
     "@nexusos/evo-nexus-adapter": "workspace:*",
     "@nexusos/audit": "workspace:*",
-    "@nexusos/events": "workspace:*"
+    "@nexusos/events": "workspace:*",
+    "@nexusos/n8n-adapter": "workspace:*",
+    "@nexusos/rapidapi-gateway": "workspace:*"
   },
   "devDependencies": {
     "tsx": "^4.16.0",

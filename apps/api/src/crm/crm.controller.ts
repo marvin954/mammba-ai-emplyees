@@ -2,11 +2,15 @@ import {
   Controller, Get, Post, Put, Delete, Patch,
   Body, Param, Query, UseGuards, Request,
 } from '@nestjs/common';
+import { InjectQueue } from '@nestjs/bull';
+import type { Queue } from 'bull';
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { CrmService } from './crm.service.js';
 import { AgentRunsService } from '../agent-runs/agent-runs.service.js';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard.js';
 import type { JwtPayload } from '../auth/auth.service.js';
+import { QUEUE_NAMES } from '@nexusos/events';
+import type { LeadEnrichJob } from '@nexusos/events';
 
 interface RequestWithUser extends Request { user: JwtPayload }
 
@@ -18,6 +22,7 @@ export class CrmController {
   constructor(
     private readonly crm: CrmService,
     private readonly agentRuns: AgentRunsService,
+    @InjectQueue(QUEUE_NAMES.ENRICHMENT) private readonly enrichmentQueue: Queue,
   ) {}
 
   // ─── Companies ─────────────────────────────────────────────────────────────
@@ -196,6 +201,25 @@ export class CrmController {
   ) {
     const { agentId, ...leadData } = body;
     const { contactId, dealId } = await this.crm.submitLead(orgId, leadData, req.user.sub);
+
+    // Fire-and-forget enrichment job
+    const enrichJob: LeadEnrichJob = {
+      type: 'lead.enrich',
+      orgId,
+      contactId,
+      agentRunId: '', // populated after agent run created below
+      email: leadData.email,
+      domain: leadData.companyName
+        ? leadData.companyName.toLowerCase().replace(/\s+/g, '') + '.com'
+        : undefined,
+    };
+    await this.enrichmentQueue.add(enrichJob, {
+      jobId: `enrich-${contactId}`,
+      attempts: 2,
+      backoff: { type: 'exponential', delay: 5000 },
+      removeOnComplete: true,
+      removeOnFail: false,
+    });
 
     let agentRunId: string | null = null;
     if (agentId) {

@@ -13,7 +13,9 @@
  * - All executions are logged with idempotency keys
  */
 
-import { createHmac } from 'crypto';
+import { createHmac, timingSafeEqual } from 'crypto';
+
+export { leadToAppointmentWorkflow } from './templates/index.js';
 
 export interface N8nTriggerInput {
   workflowId: string;
@@ -99,8 +101,10 @@ export class N8nAdapter {
     const expected = createHmac('sha256', this.webhookSecret)
       .update(payload)
       .digest('hex');
-    // Constant-time comparison to prevent timing attacks
-    return signature === `sha256=${expected}`;
+    const expectedBuf = Buffer.from(`sha256=${expected}`);
+    const actualBuf = Buffer.from(signature);
+    if (expectedBuf.length !== actualBuf.length) return false;
+    return timingSafeEqual(expectedBuf, actualBuf);
   }
 
   /**
@@ -109,5 +113,55 @@ export class N8nAdapter {
    */
   webhookUrl(path: string): string {
     return `${this.baseUrl}/webhook/${path}`;
+  }
+
+  /**
+   * Import a workflow template JSON into n8n and return the created workflow ID.
+   * The workflow is created inactive — activation is a separate step.
+   */
+  async importWorkflow(definition: Record<string, unknown>): Promise<string> {
+    const url = `${this.baseUrl}/api/v1/workflows`;
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-N8N-API-KEY': this.apiKey,
+      },
+      body: JSON.stringify(definition),
+    });
+
+    if (!response.ok) {
+      const err = await response.text();
+      throw new Error(`n8n workflow import failed (${response.status}): ${err}`);
+    }
+
+    const data = await response.json() as { data?: { id?: string } };
+    return String(data.data?.id ?? 'unknown');
+  }
+
+  /**
+   * Activate a workflow in n8n (sets active = true).
+   */
+  async activateWorkflow(workflowId: string): Promise<void> {
+    const url = `${this.baseUrl}/api/v1/workflows/${workflowId}/activate`;
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: { 'X-N8N-API-KEY': this.apiKey },
+    });
+    if (!response.ok) {
+      const err = await response.text();
+      throw new Error(`n8n workflow activation failed (${response.status}): ${err}`);
+    }
+  }
+
+  /**
+   * List all workflows visible to the API key.
+   */
+  async listWorkflows(): Promise<Array<{ id: string; name: string; active: boolean }>> {
+    const url = `${this.baseUrl}/api/v1/workflows`;
+    const response = await fetch(url, { headers: { 'X-N8N-API-KEY': this.apiKey } });
+    if (!response.ok) return [];
+    const data = await response.json() as { data?: Array<{ id: string; name: string; active: boolean }> };
+    return data.data ?? [];
   }
 }
