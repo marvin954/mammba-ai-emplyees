@@ -1,7 +1,8 @@
-import { Controller, Get, HttpCode, HttpStatus } from '@nestjs/common';
+import { Controller, Get, HttpCode, HttpStatus, Header } from '@nestjs/common';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
 import { PrismaClient } from '@nexusos/database';
 import { CircuitBreakerRegistry } from '@nexusos/ai-core';
+import { MetricsRegistry } from '@nexusos/observability';
 import { createConnection } from 'net';
 
 @ApiTags('health')
@@ -57,6 +58,15 @@ export class HealthController {
       circuitBreakers: CircuitBreakerRegistry.getAll(),
       timestamp: new Date().toISOString(),
     };
+  }
+
+  /** Prometheus-compatible metrics scrape endpoint. */
+  @Get('metrics')
+  @HttpCode(HttpStatus.OK)
+  @Header('Content-Type', 'text/plain; version=0.0.4')
+  @ApiOperation({ summary: 'Prometheus metrics scrape endpoint' })
+  metrics(): string {
+    return MetricsRegistry.prometheusText();
   }
 
   /** Legacy — kept for backward compatibility. */

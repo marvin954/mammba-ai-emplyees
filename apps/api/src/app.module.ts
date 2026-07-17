@@ -18,6 +18,9 @@ import { FinanceModule } from './finance/finance.module.js';
 import { MarketplaceModule } from './marketplace/marketplace.module.js';
 import { AgencyModule } from './agency/agency.module.js';
 import { AuditModule } from './audit/audit.module.js';
+import { AnalyticsModule } from './analytics/analytics.module.js';
+import { SettingsModule } from './settings/settings.module.js';
+import { AutomationsModule } from './automations/automations.module.js';
 import { DatabaseModule } from './common/database.module.js';
 
 @Module({
@@ -47,6 +50,9 @@ import { DatabaseModule } from './common/database.module.js';
     MarketplaceModule,
     AgencyModule,
     AuditModule,
+    AnalyticsModule,
+    SettingsModule,
+    AutomationsModule,
   ],
 })
 export class AppModule {}
