@@ -18,7 +18,7 @@ export class OrgsController {
   @Post()
   @ApiOperation({ summary: 'Create an organization' })
   create(
-    @Body() body: { name: string; slug: string; industry?: string },
+    @Body() body: { name: string; slug: string; industry: string },
     @Request() req: RequestWithUser,
   ) {
     return this.orgs.create(body, req.user.sub);

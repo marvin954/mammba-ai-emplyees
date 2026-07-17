@@ -80,10 +80,11 @@ export class SettingsService {
         ...(input.domain !== undefined ? { domain: input.domain } : {}),
         ...(input.settings !== undefined
           ? {
-              settings: {
-                ...(await this.db.organization.findUnique({ where: { id: orgId }, select: { settings: true } }).then((o) => (o?.settings as Record<string, unknown>) ?? {})),
-                ...input.settings,
-              },
+              settings: Object.assign(
+                {},
+                await this.db.organization.findUnique({ where: { id: orgId }, select: { settings: true } }).then((o: { settings: unknown } | null) => (o?.settings as Record<string, unknown>) ?? {}),
+                input.settings,
+              ) as never,
             }
           : {}),
       },
@@ -150,7 +151,7 @@ export class SettingsService {
         name: input.name,
         provider: input.provider,
         encryptedValue,
-        metadata: input.metadata ?? {},
+        metadata: (input.metadata ?? {}) as never,
         createdById: userId,
       },
       select: { id: true, name: true, provider: true, metadata: true, createdAt: true },

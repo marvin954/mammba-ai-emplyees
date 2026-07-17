@@ -10,7 +10,7 @@ export interface CircuitBreakerOptions {
 }
 
 export class CircuitBreakerOpenError extends Error {
-  constructor(public readonly name: string, public readonly retryAfterMs: number) {
+  constructor(public override readonly name: string, public readonly retryAfterMs: number) {
     super(`Circuit breaker "${name}" is OPEN. Retry after ${Math.ceil(retryAfterMs / 1000)}s.`);
     this.name = 'CircuitBreakerOpenError';
   }

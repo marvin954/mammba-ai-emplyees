@@ -27,10 +27,11 @@ export class AnthropicProvider {
       .map((m) => m.content)
       .join('\n');
 
-    const userMessages = request.messages
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const userMessages: any[] = request.messages
       .filter((m) => m.role !== 'system')
       .map((m) => ({
-        role: m.role as 'user' | 'assistant',
+        role: m.role,
         content: m.content,
       }));
 

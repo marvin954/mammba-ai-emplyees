@@ -3,7 +3,7 @@ import {
   Body, Param, Query, UseGuards, Req,
 } from '@nestjs/common';
 import { MarketplaceService } from './marketplace.service.js';
-import { JwtAuthGuard } from '../auth/jwt-auth.guard.js';
+import { JwtAuthGuard } from '../common/guards/jwt-auth.guard.js';
 
 @Controller()
 @UseGuards(JwtAuthGuard)

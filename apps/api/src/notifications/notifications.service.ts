@@ -34,7 +34,7 @@ export class NotificationsService {
         title: input.title,
         body: input.body ?? null,
         actionUrl: input.actionUrl ?? null,
-        metadata: input.metadata ?? {},
+        metadata: (input.metadata ?? {}) as never,
       },
     });
   }

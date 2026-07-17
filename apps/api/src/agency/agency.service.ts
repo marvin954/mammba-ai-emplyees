@@ -160,7 +160,7 @@ export class AgencyService {
 
     return this.db.organization.update({
       where: { id: childOrgId },
-      data: { settings: { ...(child.settings as object), ...safeSettings } },
+      data: { settings: { ...(child.settings as object), ...safeSettings } as never },
     });
   }
 
@@ -224,18 +224,18 @@ export class AgencyService {
       take: 5,
     });
 
-    const topOrgIds = topOrgs.map((r) => r.orgId);
+    const topOrgIds = topOrgs.map((r: { orgId: string }) => r.orgId);
     const topOrgDetails = await this.db.organization.findMany({
       where: { id: { in: topOrgIds } },
       select: { id: true, name: true, slug: true },
     });
-    const orgMap = Object.fromEntries(topOrgDetails.map((o) => [o.id, o]));
+    const orgMap = Object.fromEntries(topOrgDetails.map((o: { id: string; name: string; slug: string }) => [o.id, o]));
 
     return {
       totalChildren: children,
-      byStatus: Object.fromEntries(byStatus.map((r) => [r.status, r._count])),
+      byStatus: Object.fromEntries(byStatus.map((r: { status: string; _count: number }) => [r.status, r._count])),
       monthlySpendUsd: monthlySpend._sum.totalCostUsd ?? 0,
-      topActiveOrgs: topOrgs.map((r) => ({
+      topActiveOrgs: topOrgs.map((r: { orgId: string; _count: number }) => ({
         ...orgMap[r.orgId],
         agentRunCount: r._count,
       })),

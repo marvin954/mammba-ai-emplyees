@@ -62,11 +62,11 @@ export class AnalyticsService {
       }),
     ]);
 
-    const agentMap = new Map(agents.map((a) => [a.id, a.name]));
+    const agentMap = new Map((agents as Array<{ id: string; name: string }>).map((a) => [a.id, a.name]));
 
     // Status counts
-    const completed = runsAll.filter((r) => r.status === 'completed').length;
-    const failed = runsAll.filter((r) => r.status === 'failed').length;
+    const completed = (runsAll as Array<{ status: string }>).filter((r) => r.status === 'completed').length;
+    const failed = (runsAll as Array<{ status: string }>).filter((r) => r.status === 'failed').length;
 
     // Usage by provider/model
     const byProvider: Record<string, { costUsd: number; tokens: number }> = {};
@@ -127,7 +127,7 @@ export class AnalyticsService {
         byProvider,
         byModel,
       },
-      topAgents,
+      topAgents: topAgents as Array<{ agentId: string; name: string; runs: number; costUsd: number }>,
       dailyRuns,
     };
   }
@@ -153,7 +153,7 @@ export class AnalyticsService {
       take: 200,
     });
 
-    return runs.map((r) => ({
+    return runs.map((r: { id: string; status: string; durationMs: number | null; costUsd: number; createdAt: Date; agent: { name: string } }) => ({
       agentRunId: r.id,
       agentName: r.agent.name,
       status: r.status,

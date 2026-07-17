@@ -7,13 +7,10 @@ import {
   Param,
   Query,
   UseGuards,
-  UseInterceptors,
-  UploadedFile,
   BadRequestException,
 } from '@nestjs/common';
-import { FileInterceptor } from '@nestjs/platform-express';
 import { KnowledgeService } from './knowledge.service.js';
-import { JwtAuthGuard } from '../auth/jwt-auth.guard.js';
+import { JwtAuthGuard } from '../common/guards/jwt-auth.guard.js';
 
 class SearchDto {
   query!: string;
@@ -48,16 +45,6 @@ export class KnowledgeController {
   @Post('ingest/text')
   ingestText(@Param('orgId') orgId: string, @Body() dto: IngestTextDto) {
     return this.knowledge.ingestText(orgId, dto.name, dto.text);
-  }
-
-  @Post('ingest/file')
-  @UseInterceptors(FileInterceptor('file', { limits: { fileSize: 10 * 1024 * 1024 } }))
-  ingestFile(
-    @Param('orgId') orgId: string,
-    @UploadedFile() file: Express.Multer.File | undefined,
-  ) {
-    if (!file) throw new BadRequestException('No file uploaded');
-    return this.knowledge.ingestFile(orgId, file.originalname, file.buffer, file.mimetype);
   }
 
   @Get('search')

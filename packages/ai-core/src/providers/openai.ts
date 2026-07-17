@@ -27,8 +27,9 @@ export class OpenAIProvider {
 
   async complete(request: ChatCompletionRequest): Promise<ChatCompletionResponse> {
     try {
-      const messages = request.messages.map((m) => ({
-        role: m.role as 'system' | 'user' | 'assistant' | 'tool',
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const messages = request.messages.map((m): any => ({
+        role: m.role,
         content: m.content,
         ...(m.toolCallId ? { tool_call_id: m.toolCallId } : {}),
       }));

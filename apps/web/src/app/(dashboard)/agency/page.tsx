@@ -173,7 +173,7 @@ export default function AgencyPage() {
                     <span className={`rounded-full px-2 py-0.5 text-xs capitalize ${PLAN_STYLE[org.plan] ?? 'bg-gray-700 text-gray-300'}`}>
                       {org.plan}
                     </span>
-                    {(org.settings as Record<string, unknown>)?.whitelabelEnabled && (
+                    {Boolean((org.settings as Record<string, unknown>)?.whitelabelEnabled) && (
                       <span className="rounded-full bg-violet-500/20 px-2 py-0.5 text-xs text-violet-400">White-label</span>
                     )}
                   </div>
@@ -185,7 +185,7 @@ export default function AgencyPage() {
                     <span>{org._count.agentRuns} runs</span>
                     <span>Since {new Date(org.createdAt).toLocaleDateString()}</span>
                   </div>
-                  {(org.settings as Record<string, unknown>)?.customDomain && (
+                  {Boolean((org.settings as Record<string, unknown>)?.customDomain) && (
                     <p className="mt-1 text-xs text-indigo-400">
                       {String((org.settings as Record<string, unknown>).customDomain)}
                     </p>

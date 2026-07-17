@@ -36,7 +36,7 @@ export class AgentRunsService {
         agentId: parsed.agentId,
         taskType: parsed.taskType,
         status: 'queued',
-        input: parsed.input,
+        input: parsed.input as never,
         initiatedById,
       },
     });

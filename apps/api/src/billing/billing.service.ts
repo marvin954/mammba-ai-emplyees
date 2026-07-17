@@ -122,7 +122,7 @@ export class BillingService {
       }),
     ]);
 
-    const totalCostUsd = records.reduce((sum, r) => sum + r.totalCostUsd, 0);
+    const totalCostUsd = records.reduce((sum: number, r: { totalCostUsd: number; provider: string | null; resourceType: string }) => sum + r.totalCostUsd, 0);
     const byProvider: Record<string, number> = {};
     const byResourceType: Record<string, number> = {};
 

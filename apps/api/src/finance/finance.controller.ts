@@ -3,7 +3,7 @@ import {
   Body, Param, Query, UseGuards, Req,
 } from '@nestjs/common';
 import { FinanceService, CreateTransactionInput, UpdateTransactionInput } from './finance.service.js';
-import { JwtAuthGuard } from '../auth/jwt-auth.guard.js';
+import { JwtAuthGuard } from '../common/guards/jwt-auth.guard.js';
 
 @Controller('orgs/:orgId/finance')
 @UseGuards(JwtAuthGuard)

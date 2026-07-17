@@ -23,7 +23,7 @@ export class KnowledgeService {
 
   constructor(private readonly db: PrismaClient) {
     const apiKey = process.env['OPENAI_API_KEY'];
-    this.openai = apiKey ? new OpenAIProvider({ apiKey }) : null;
+    this.openai = apiKey ? new OpenAIProvider(apiKey) : null;
   }
 
   // ─── Sources ─────────────────────────────────────────────────────────────────
@@ -64,7 +64,7 @@ export class KnowledgeService {
     if (!text.trim()) throw new BadRequestException('Text content is empty');
 
     const source = await this.db.knowledgeSource.create({
-      data: { orgId, name, type: 'text', status: 'processing', metadata },
+      data: { orgId, name, type: 'text', status: 'processing', metadata: metadata as never },
     });
 
     try {
@@ -103,7 +103,7 @@ export class KnowledgeService {
 
     let embeddings: number[][] | null = null;
     if (this.openai) {
-      const result = await this.openai.embed({ model: EMBED_MODEL, inputs: chunks });
+      const result = await this.openai.embed({ provider: 'openai' as const, model: EMBED_MODEL, input: chunks, orgId });
       embeddings = result.embeddings;
     }
 
@@ -136,7 +136,7 @@ export class KnowledgeService {
       return this.keywordSearch(orgId, query, topK);
     }
 
-    const result = await this.openai.embed({ model: EMBED_MODEL, inputs: [query] });
+    const result = await this.openai.embed({ provider: 'openai' as const, model: EMBED_MODEL, input: [query], orgId });
     const vec = result.embeddings[0];
     if (!vec) return [];
 
@@ -159,7 +159,7 @@ export class KnowledgeService {
       topK,
     );
 
-    return rows.map((r) => ({
+    return (rows as Array<{ id: string; sourceId: string; sourceName: string; content: string; similarity: number; metadata: string }>).map((r) => ({
       chunkId: r.id,
       sourceId: r.sourceId,
       sourceName: r.sourceName,
@@ -186,7 +186,7 @@ export class KnowledgeService {
       include: { source: { select: { name: true } } },
     });
 
-    return chunks.map((c) => ({
+    return (chunks as Array<{ id: string; sourceId: string; source: { name: string }; content: string; metadata: Record<string, unknown> }>).map((c) => ({
       chunkId: c.id,
       sourceId: c.sourceId,
       sourceName: c.source.name,

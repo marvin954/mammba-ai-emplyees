@@ -74,7 +74,7 @@ export class OrgsService {
       data: {
         ...(parsed.name ? { name: parsed.name } : {}),
         ...(parsed.industry ? { industry: parsed.industry } : {}),
-        ...(parsed.settings ? { settings: parsed.settings } : {}),
+        ...(parsed.settings ? { settings: parsed.settings as never } : {}),
       },
     });
   }

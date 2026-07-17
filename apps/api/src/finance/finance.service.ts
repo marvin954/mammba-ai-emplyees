@@ -146,8 +146,8 @@ export class FinanceService {
       }),
     ]);
 
-    const income = byType.find((r) => r.type === 'income')?._sum.amount ?? 0;
-    const expenses = byType.find((r) => r.type === 'expense')?._sum.amount ?? 0;
+    const income = (byType as Array<{ type: string | null; _sum: { amount: number | null } }>).find((r) => r.type === 'income')?._sum.amount ?? 0;
+    const expenses = (byType as Array<{ type: string | null; _sum: { amount: number | null } }>).find((r) => r.type === 'expense')?._sum.amount ?? 0;
 
     return {
       period: { start: start.toISOString(), end: end.toISOString() },
@@ -156,7 +156,7 @@ export class FinanceService {
       net: income - expenses,
       flaggedCount,
       unreconciledCount,
-      topExpenseCategories: byCategory.map((r) => ({
+      topExpenseCategories: byCategory.map((r: { category: string | null; _sum: { amount: number | null }; _count: number }) => ({
         category: r.category,
         total: r._sum.amount ?? 0,
         count: r._count,

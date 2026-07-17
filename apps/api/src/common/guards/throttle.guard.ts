@@ -2,7 +2,8 @@ import {
   Injectable,
   type CanActivate,
   type ExecutionContext,
-  TooManyRequestsException,
+  HttpException,
+  HttpStatus,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import type { FastifyRequest } from 'fastify';
@@ -74,7 +75,7 @@ export class ThrottleGuard implements CanActivate {
     rec.count += 1;
     if (rec.count > opts.limit) {
       const retryAfter = Math.ceil((rec.resetAt - now) / 1_000);
-      throw new TooManyRequestsException(`Rate limit exceeded. Retry after ${retryAfter}s.`);
+      throw new HttpException(`Rate limit exceeded. Retry after ${retryAfter}s.`, HttpStatus.TOO_MANY_REQUESTS);
     }
     return true;
   }

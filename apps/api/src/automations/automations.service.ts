@@ -59,7 +59,7 @@ export class AutomationsService {
         orgId,
         name: input.name,
         description: input.description,
-        config: input.config ?? {},
+        config: (input.config ?? {}) as never,
         isActive: false,
       },
     });
@@ -79,8 +79,8 @@ export class AutomationsService {
       data: {
         ...(input.name !== undefined ? { name: input.name } : {}),
         ...(input.description !== undefined ? { description: input.description } : {}),
-        ...(input.config !== undefined ? { config: input.config } : {}),
-      },
+        ...(input.config !== undefined ? { config: input.config as never } : {}),
+      } as never,
     });
   }
 
@@ -110,7 +110,7 @@ export class AutomationsService {
     });
 
     const execution = await this.db.workflowExecution.create({
-      data: { workflowId, orgId, status: 'running', input },
+      data: { workflowId, orgId, status: 'running', input: input as never },
     });
 
     return { executionId: execution.id, idempotencyKey };

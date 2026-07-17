@@ -90,13 +90,4 @@ export class HealthController {
     }
   }
 
-  private async checkRedis(): Promise<'connected' | 'disconnected' | 'unconfigured'> {
-    if (!this.redis) return 'unconfigured';
-    try {
-      await this.redis.ping();
-      return 'connected';
-    } catch {
-      return 'disconnected';
-    }
-  }
 }

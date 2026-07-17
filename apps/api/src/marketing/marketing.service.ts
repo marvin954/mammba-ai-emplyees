@@ -158,8 +158,8 @@ export class MarketingService {
 
     return {
       total,
-      byStatus: Object.fromEntries(byStatus.map((r) => [r.status, r._count])),
-      byType: Object.fromEntries(byType.map((r) => [r.type, r._count])),
+      byStatus: Object.fromEntries(byStatus.map((r: { status: string; _count: number }) => [r.status, r._count])),
+      byType: Object.fromEntries(byType.map((r: { type: string; _count: number }) => [r.type, r._count])),
       totalSpend: spendAgg._sum.spend ?? 0,
       totalBudget: spendAgg._sum.budget ?? 0,
     };

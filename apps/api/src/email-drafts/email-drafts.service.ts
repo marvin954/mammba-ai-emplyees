@@ -69,15 +69,17 @@ export class EmailDraftsService {
       data: {
         orgId,
         agentRunId: draft.agentRunId ?? '',
-        toolName: 'email.send',
-        toolInput: {
+        requestedAction: 'email.send',
+        reason: `Send email to ${draft.toAddress}: ${draft.subject}`,
+        expectedOutcome: 'Email delivered to recipient',
+        dataInvolved: {
           to: draft.toAddress,
           subject: draft.subject,
           preview: draft.bodyText.slice(0, 200),
-        },
+        } as never,
         riskLevel: 'medium',
         status: 'pending',
-        expiresAt: new Date(Date.now() + 48 * 60 * 60 * 1000), // 48h
+        expiresAt: new Date(Date.now() + 48 * 60 * 60 * 1000),
       },
     });
 

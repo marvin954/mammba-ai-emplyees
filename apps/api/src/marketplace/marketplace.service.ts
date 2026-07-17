@@ -39,6 +39,7 @@ const OFFICIAL_PLUGINS: PluginManifest[] = [
     ui: [],
     tags: ['slack', 'notifications', 'integration'],
     license: 'MIT',
+    screenshot_urls: [],
   },
   {
     schema_version: '2.0',
@@ -72,6 +73,7 @@ const OFFICIAL_PLUGINS: PluginManifest[] = [
     },
     tags: ['hubspot', 'crm', 'sync'],
     license: 'MIT',
+    screenshot_urls: [],
   },
   {
     schema_version: '2.0',
@@ -103,6 +105,7 @@ const OFFICIAL_PLUGINS: PluginManifest[] = [
     ui: [],
     tags: ['pdf', 'reports', 'export'],
     license: 'MIT',
+    screenshot_urls: [],
   },
   {
     schema_version: '2.0',
@@ -138,6 +141,7 @@ const OFFICIAL_PLUGINS: PluginManifest[] = [
     },
     tags: ['google', 'sheets', 'export', 'analytics'],
     license: 'MIT',
+    screenshot_urls: [],
   },
   {
     schema_version: '2.0',
@@ -171,6 +175,7 @@ const OFFICIAL_PLUGINS: PluginManifest[] = [
     },
     tags: ['twilio', 'sms', 'notifications'],
     license: 'MIT',
+    screenshot_urls: [],
   },
 ];
 
@@ -190,7 +195,7 @@ export class MarketplaceService {
         update: {
           version: manifest.version,
           manifestRaw: manifest as never,
-          tools: manifest.tools.map((t) => t.name),
+          tools: manifest.tools?.map((t: { name: string }) => t.name),
           status: 'approved',
         },
       });
@@ -247,11 +252,11 @@ export class MarketplaceService {
         where: { orgId: options.orgId },
         select: { pluginSlug: true },
       });
-      installedSlugs = new Set(installs.map((i) => i.pluginSlug));
+      installedSlugs = new Set(installs.map((i: { pluginSlug: string }) => i.pluginSlug));
     }
 
     return {
-      data: plugins.map((p) => ({ ...p, installed: installedSlugs.has(p.slug) })),
+      data: plugins.map((p: { slug: string }) => ({ ...p, installed: installedSlugs.has(p.slug) })),
       total,
       page,
       limit,
@@ -389,7 +394,7 @@ export class MarketplaceService {
           description: manifest.description,
           longDescription: manifest.long_description ?? null,
           permissions: manifest.permissions,
-          tools: manifest.tools.map((t) => t.name),
+          tools: manifest.tools?.map((t: { name: string }) => t.name),
           manifestRaw: manifest as never,
           tags: manifest.tags,
           iconUrl: manifest.icon_url ?? null,
@@ -425,7 +430,7 @@ export class MarketplaceService {
       version: manifest.version,
       requiredPlan: manifest.required_plan,
       permissions: manifest.permissions,
-      tools: manifest.tools.map((t) => t.name),
+      tools: manifest.tools?.map((t: { name: string }) => t.name),
       entrypoint: manifest.entrypoint ?? null,
       manifestRaw: manifest as never,
       iconUrl: manifest.icon_url ?? null,

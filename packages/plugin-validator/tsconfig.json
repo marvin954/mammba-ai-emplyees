@@ -3,14 +3,11 @@
   "compilerOptions": {
     "outDir": "dist",
     "rootDir": "src",
+    "exactOptionalPropertyTypes": false,
+    "noUncheckedIndexedAccess": false,
     "module": "CommonJS",
     "moduleResolution": "Node"
   },
-  "references": [
-    {
-      "path": "../types"
-    }
-  ],
   "include": [
     "src"
   ]

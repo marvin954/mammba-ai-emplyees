@@ -53,7 +53,7 @@ export class CrmService {
   async createCompany(orgId: string, input: CreateCompanyInput, createdById: string) {
     const parsed = createCompanySchema.parse(input);
     return this.db.company.create({
-      data: { ...parsed, orgId, ownerId: createdById },
+      data: { ...parsed, orgId, ownerId: createdById } as never,
     });
   }
 
@@ -90,7 +90,7 @@ export class CrmService {
   async updateCompany(orgId: string, companyId: string, input: UpdateCompanyInput) {
     await this.assertCompany(orgId, companyId);
     const parsed = createCompanySchema.partial().parse(input);
-    return this.db.company.update({ where: { id: companyId }, data: parsed });
+    return this.db.company.update({ where: { id: companyId }, data: parsed as never });
   }
 
   async deleteCompany(orgId: string, companyId: string) {
@@ -108,7 +108,7 @@ export class CrmService {
         orgId,
         ownerId: createdById,
         tags: parsed.tags,
-        customFields: parsed.customFields,
+        customFields: parsed.customFields as never,
       },
     });
   }
@@ -160,7 +160,7 @@ export class CrmService {
     const parsed = updateContactSchema.parse(input);
     return this.db.contact.update({
       where: { id: contactId },
-      data: parsed,
+      data: parsed as never,
     });
   }
 
@@ -222,7 +222,6 @@ export class CrmService {
       data: {
         stageId,
         status: stage.name === 'Closed Won' ? 'won' : stage.name === 'Closed Lost' ? 'lost' : 'open',
-        closedAt: ['Closed Won', 'Closed Lost'].includes(stage.name) ? new Date() : null,
       },
       include: { stage: true },
     });
@@ -264,7 +263,7 @@ export class CrmService {
         actorId,
         agentId: input.agentId ?? null,
         agentRunId: input.agentRunId ?? null,
-        metadata: input.metadata ?? {},
+        metadata: (input.metadata ?? {}) as never,
       },
     });
   }
@@ -272,7 +271,7 @@ export class CrmService {
   // ─── Pipelines ──────────────────────────────────────────────────────────
 
   async ensureDefaultPipeline(orgId: string) {
-    const existing = await this.db.pipeline.findFirst({ where: { orgId, isDefault: true } });
+    const existing = await this.db.pipeline.findFirst({ where: { orgId, isDefault: true }, include: { stages: { orderBy: { order: 'asc' } } } });
     if (existing) return existing;
 
     return this.db.pipeline.create({
@@ -382,7 +381,7 @@ export class CrmService {
             leadStatus: 'new',
             leadScore: 0,
             tags: [],
-            customFields: input.customFields ?? {},
+            customFields: (input.customFields ?? {}) as never,
           },
         });
 

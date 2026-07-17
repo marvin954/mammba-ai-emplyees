@@ -2,7 +2,7 @@ import {
   Controller, Get, Post, Patch, Body, Param, UseGuards, Req,
 } from '@nestjs/common';
 import { AgencyService, type ProvisionOrgInput } from './agency.service.js';
-import { JwtAuthGuard } from '../auth/jwt-auth.guard.js';
+import { JwtAuthGuard } from '../common/guards/jwt-auth.guard.js';
 
 @Controller('orgs/:agencyOrgId/agency')
 @UseGuards(JwtAuthGuard)

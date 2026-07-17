@@ -13,7 +13,7 @@ import {
 } from '@nestjs/common';
 import { FastifyRequest } from 'fastify';
 import { BillingService } from './billing.service.js';
-import { JwtAuthGuard } from '../auth/jwt-auth.guard.js';
+import { JwtAuthGuard } from '../common/guards/jwt-auth.guard.js';
 
 class CreateCheckoutDto {
   plan!: string;

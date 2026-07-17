@@ -4,7 +4,7 @@ export class AiGatewayError extends Error {
     public readonly code: string,
     public readonly provider: string,
     public readonly retryable: boolean = false,
-    public readonly cause?: unknown,
+    public override readonly cause?: unknown,
   ) {
     super(message);
     this.name = 'AiGatewayError';

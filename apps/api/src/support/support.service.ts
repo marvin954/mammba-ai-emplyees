@@ -168,7 +168,7 @@ export class SupportService {
 
     let avgResolutionHours = 0;
     if (avgResolution.length > 0) {
-      const total = avgResolution.reduce((sum, t) => {
+      const total = avgResolution.reduce((sum: number, t: { resolvedAt: Date | null; createdAt: Date }) => {
         const ms = (t.resolvedAt!.getTime() - t.createdAt.getTime());
         return sum + ms;
       }, 0);
@@ -177,9 +177,9 @@ export class SupportService {
 
     return {
       total,
-      byStatus: Object.fromEntries(byStatus.map((r) => [r.status, r._count])),
+      byStatus: Object.fromEntries((byStatus as Array<{ status: string; _count: number }>).map((r) => [r.status, r._count])),
       byPriority: Object.fromEntries(
-        byPriority
+        (byPriority as Array<{ priority: string; _count: number }>)
           .sort((a, b) => (PRIORITY_ORDER[a.priority] ?? 9) - (PRIORITY_ORDER[b.priority] ?? 9))
           .map((r) => [r.priority, r._count]),
       ),

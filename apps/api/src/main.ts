@@ -3,7 +3,6 @@ import { NestFactory } from '@nestjs/core';
 import { FastifyAdapter, type NestFastifyApplication } from '@nestjs/platform-fastify';
 import { ValidationPipe, Logger } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
-import helmet from 'helmet';
 import { AppModule } from './app.module.js';
 import { MarketplaceService } from './marketplace/marketplace.service.js';
 import { AllExceptionsFilter } from './common/filters/http-exception.filter.js';
@@ -37,7 +36,6 @@ async function bootstrap(): Promise<void> {
   );
 
   // Security
-  await app.register(helmet as Parameters<typeof app.register>[0]);
   app.enableCors({
     origin: process.env['APP_URL'] ?? 'http://localhost:3000',
     credentials: true,
