@@ -6,9 +6,30 @@ import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import helmet from 'helmet';
 import { AppModule } from './app.module.js';
 import { MarketplaceService } from './marketplace/marketplace.service.js';
+import { AllExceptionsFilter } from './common/filters/http-exception.filter.js';
+import { RequestIdInterceptor } from './common/interceptors/request-id.interceptor.js';
+import { LoggingInterceptor } from './common/interceptors/logging.interceptor.js';
+import { ThrottleGuard } from './common/guards/throttle.guard.js';
+import { Reflector } from '@nestjs/core';
+
+// Validate required environment variables before anything else starts.
+// This gives operators a clear error message rather than a cryptic crash later.
+function validateEnv(logger: Logger): void {
+  const REQUIRED = ['DATABASE_URL', 'REDIS_URL', 'NEXTAUTH_SECRET'] as const;
+  const missing = REQUIRED.filter((k) => !process.env[k]);
+  if (missing.length > 0) {
+    logger.error(
+      `Missing required environment variables: ${missing.join(', ')}. ` +
+        'Check your .env file or deployment configuration.',
+    );
+    process.exit(1);
+  }
+}
 
 async function bootstrap(): Promise<void> {
   const logger = new Logger('Bootstrap');
+
+  validateEnv(logger);
 
   const app = await NestFactory.create<NestFastifyApplication>(
     AppModule,
@@ -22,7 +43,7 @@ async function bootstrap(): Promise<void> {
     credentials: true,
   });
 
-  // Validation
+  // Global pipes, filters, interceptors
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
@@ -30,6 +51,9 @@ async function bootstrap(): Promise<void> {
       transform: true,
     }),
   );
+  app.useGlobalFilters(new AllExceptionsFilter());
+  app.useGlobalInterceptors(new RequestIdInterceptor(), new LoggingInterceptor());
+  app.useGlobalGuards(new ThrottleGuard(new Reflector()));
 
   // Swagger (non-production only)
   if (process.env['NODE_ENV'] !== 'production') {

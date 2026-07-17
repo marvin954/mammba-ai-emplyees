@@ -19,6 +19,7 @@ const navItems = [
   { href: '/automations', label: 'Automations', icon: '⚡' },
   { href: '/analytics', label: 'Analytics', icon: '📊' },
   { href: '/billing', label: 'Billing', icon: '💳' },
+  { href: '/audit', label: 'Audit Log', icon: '🔍' },
   { href: '/settings', label: 'Settings', icon: '⚙️' },
 ];
 

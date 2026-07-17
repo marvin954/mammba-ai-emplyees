@@ -17,6 +17,7 @@ import { SupportModule } from './support/support.module.js';
 import { FinanceModule } from './finance/finance.module.js';
 import { MarketplaceModule } from './marketplace/marketplace.module.js';
 import { AgencyModule } from './agency/agency.module.js';
+import { AuditModule } from './audit/audit.module.js';
 import { DatabaseModule } from './common/database.module.js';
 
 @Module({
@@ -45,6 +46,7 @@ import { DatabaseModule } from './common/database.module.js';
     FinanceModule,
     MarketplaceModule,
     AgencyModule,
+    AuditModule,
   ],
 })
 export class AppModule {}

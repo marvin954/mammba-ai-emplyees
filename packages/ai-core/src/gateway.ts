@@ -9,6 +9,7 @@ import type {
 import { AnthropicProvider } from './providers/anthropic.js';
 import { OpenAIProvider } from './providers/openai.js';
 import { BudgetExceededError } from './errors/index.js';
+import { CircuitBreakerRegistry } from './circuit-breaker.js';
 
 interface GatewayConfig {
   anthropicApiKey?: string;
@@ -44,7 +45,11 @@ export class AiGateway {
     await this.checkBudget(request.orgId, 0.10);
 
     const provider = this.getProvider(request.provider);
-    const response = await provider.complete(request);
+    const cb = CircuitBreakerRegistry.get(request.provider, {
+      failureThreshold: 5,
+      resetTimeoutMs: 30_000,
+    });
+    const response = await cb.call(() => provider.complete(request));
 
     await this.recordUsage({
       orgId: request.orgId,
@@ -60,7 +65,11 @@ export class AiGateway {
 
   async embed(request: EmbeddingRequest): Promise<EmbeddingResponse> {
     const provider = this.getProvider(request.provider);
-    const response = await (provider as OpenAIProvider).embed(request);
+    const cb = CircuitBreakerRegistry.get(request.provider, {
+      failureThreshold: 5,
+      resetTimeoutMs: 30_000,
+    });
+    const response = await cb.call(() => (provider as OpenAIProvider).embed(request));
 
     await this.recordUsage({
       orgId: request.orgId,

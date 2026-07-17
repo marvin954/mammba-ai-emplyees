@@ -34,12 +34,23 @@ export class AuditService {
     });
   }
 
-  async list(orgId: string, options: { limit?: number; cursor?: string; action?: string } = {}) {
-    const { limit = 50, cursor, action } = options;
+  async list(
+    orgId: string,
+    options: {
+      limit?: number;
+      cursor?: string;
+      action?: string;
+      actorId?: string;
+      resourceType?: string;
+    } = {},
+  ) {
+    const { limit = 50, cursor, action, actorId, resourceType } = options;
     return this.db.auditEvent.findMany({
       where: {
         orgId,
         ...(action ? { action } : {}),
+        ...(actorId ? { actorId } : {}),
+        ...(resourceType ? { resourceType } : {}),
         ...(cursor ? { createdAt: { lt: new Date(cursor) } } : {}),
       },
       orderBy: { createdAt: 'desc' },

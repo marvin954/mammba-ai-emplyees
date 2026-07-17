@@ -5,6 +5,7 @@ import {
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { AgentRunsService } from './agent-runs.service.js';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard.js';
+import { Throttle } from '../common/guards/throttle.guard.js';
 import type { JwtPayload } from '../auth/auth.service.js';
 
 interface RequestWithUser extends Request { user: JwtPayload }
@@ -17,6 +18,7 @@ export class AgentRunsController {
   constructor(private readonly runs: AgentRunsService) {}
 
   @Post()
+  @Throttle({ limit: 30, ttl: 60 })
   @ApiOperation({ summary: 'Enqueue an agent run' })
   enqueue(
     @Param('orgId') orgId: string,

@@ -2,6 +2,7 @@ import { Controller, Post, Body, HttpCode, HttpStatus, UseGuards, Get, Request }
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { AuthService } from './auth.service.js';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard.js';
+import { Throttle } from '../common/guards/throttle.guard.js';
 import type { JwtPayload } from './auth.service.js';
 
 interface RequestWithUser extends Request {
@@ -14,6 +15,7 @@ export class AuthController {
   constructor(private readonly auth: AuthService) {}
 
   @Post('register')
+  @Throttle({ limit: 5, ttl: 60 })
   @ApiOperation({ summary: 'Register a new account' })
   async register(
     @Body() body: { email: string; password: string; name: string },
@@ -23,6 +25,7 @@ export class AuthController {
 
   @Post('login')
   @HttpCode(HttpStatus.OK)
+  @Throttle({ limit: 10, ttl: 60 })
   @ApiOperation({ summary: 'Login with email + password' })
   async login(
     @Body() body: { email: string; password: string },
