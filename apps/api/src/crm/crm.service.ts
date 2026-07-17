@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaClient } from '@nexusos/database';
 import { z } from 'zod';
 
@@ -191,6 +191,71 @@ export class CrmService {
       },
       include: { stages: true },
     });
+  }
+
+  // ─── Lead submission (MVP vertical slice) ─────────────────────────────────
+  // Creates a contact + deal, then returns both for the calling layer to
+  // optionally enqueue an agent qualification run.
+
+  async submitLead(
+    orgId: string,
+    input: {
+      email: string;
+      firstName: string;
+      lastName: string;
+      phone?: string;
+      companyName?: string;
+      source?: string;
+      customFields?: Record<string, unknown>;
+    },
+    createdById: string,
+  ): Promise<{ contactId: string; dealId: string | null }> {
+    // Upsert contact (deduplication by email within org)
+    const existing = await this.db.contact.findFirst({
+      where: { orgId, email: input.email, deletedAt: null },
+    });
+
+    const contact = existing
+      ? existing
+      : await this.db.contact.create({
+          data: {
+            orgId,
+            email: input.email,
+            firstName: input.firstName,
+            lastName: input.lastName,
+            phone: input.phone ?? null,
+            ownerId: createdById,
+            source: input.source ?? 'manual',
+            leadStatus: 'new',
+            leadScore: 0,
+            tags: [],
+            customFields: input.customFields ?? {},
+          },
+        });
+
+    // Ensure a default pipeline exists
+    const pipeline = await this.ensureDefaultPipeline(orgId);
+    const firstStage = pipeline.stages[0];
+
+    let dealId: string | null = null;
+    if (firstStage) {
+      const deal = await this.db.deal.create({
+        data: {
+          orgId,
+          name: `${input.firstName} ${input.lastName} — Lead`,
+          contactId: contact.id,
+          pipelineId: pipeline.id,
+          stageId: firstStage.id,
+          status: 'open',
+          value: 0,
+          currency: 'USD',
+          ownerId: createdById,
+        },
+      });
+      dealId = deal.id;
+    }
+
+    return { contactId: contact.id, dealId };
   }
 
   private async assertContact(orgId: string, contactId: string) {

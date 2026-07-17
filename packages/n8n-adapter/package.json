@@ -1,0 +1,17 @@
+{
+  "name": "@nexusos/n8n-adapter",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": { ".": { "import": "./dist/index.js", "types": "./dist/index.d.ts" } },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@nexusos/types": "workspace:*",
+    "@nexusos/events": "workspace:*"
+  },
+  "devDependencies": { "typescript": "^5.5.0" }
+}

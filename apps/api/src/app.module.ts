@@ -6,6 +6,7 @@ import { OrgsModule } from './orgs/orgs.module.js';
 import { AgentsModule } from './agents/agents.module.js';
 import { CrmModule } from './crm/crm.module.js';
 import { ApprovalsModule } from './approvals/approvals.module.js';
+import { AgentRunsModule } from './agent-runs/agent-runs.module.js';
 import { DatabaseModule } from './common/database.module.js';
 
 @Module({
@@ -23,6 +24,7 @@ import { DatabaseModule } from './common/database.module.js';
     AgentsModule,
     CrmModule,
     ApprovalsModule,
+    AgentRunsModule,
   ],
 })
 export class AppModule {}

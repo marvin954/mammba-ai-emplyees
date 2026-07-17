@@ -1,0 +1,30 @@
+{
+  "name": "@nexusos/worker",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/main.js",
+    "dev": "tsx watch src/main.ts",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "bullmq": "^5.12.0",
+    "ioredis": "^5.4.1",
+    "@nexusos/database": "workspace:*",
+    "@nexusos/types": "workspace:*",
+    "@nexusos/config": "workspace:*",
+    "@nexusos/ai-core": "workspace:*",
+    "@nexusos/agent-runtime": "workspace:*",
+    "@nexusos/evo-nexus-adapter": "workspace:*",
+    "@nexusos/audit": "workspace:*",
+    "@nexusos/events": "workspace:*"
+  },
+  "devDependencies": {
+    "tsx": "^4.16.0",
+    "typescript": "^5.5.0",
+    "vitest": "^2.0.0"
+  }
+}

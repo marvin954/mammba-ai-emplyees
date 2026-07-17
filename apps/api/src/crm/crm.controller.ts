@@ -4,6 +4,7 @@ import {
 } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { CrmService } from './crm.service.js';
+import { AgentRunsService } from '../agent-runs/agent-runs.service.js';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard.js';
 import type { JwtPayload } from '../auth/auth.service.js';
 
@@ -14,7 +15,10 @@ interface RequestWithUser extends Request { user: JwtPayload }
 @UseGuards(JwtAuthGuard)
 @Controller('orgs/:orgId/crm')
 export class CrmController {
-  constructor(private readonly crm: CrmService) {}
+  constructor(
+    private readonly crm: CrmService,
+    private readonly agentRuns: AgentRunsService,
+  ) {}
 
   // Contacts
   @Post('contacts')
@@ -83,5 +87,37 @@ export class CrmController {
     @Query('stageId') stageId?: string,
   ) {
     return this.crm.listDeals(orgId, { pipelineId, stageId });
+  }
+
+  // ── MVP vertical slice: submit a lead and optionally trigger AI qualification ─
+  @Post('leads')
+  @ApiOperation({ summary: 'Submit a new lead — optionally triggers AI qualification' })
+  async submitLead(
+    @Param('orgId') orgId: string,
+    @Body() body: {
+      email: string;
+      firstName: string;
+      lastName: string;
+      phone?: string;
+      companyName?: string;
+      source?: string;
+      customFields?: Record<string, unknown>;
+      agentId?: string;
+    },
+    @Request() req: RequestWithUser,
+  ) {
+    const { agentId, ...leadData } = body;
+    const { contactId, dealId } = await this.crm.submitLead(orgId, leadData, req.user.sub);
+
+    let agentRunId: string | null = null;
+    if (agentId) {
+      agentRunId = await this.agentRuns.enqueue(
+        orgId,
+        { agentId, taskType: 'qualify_lead', input: { contactId, dealId, ...leadData } },
+        req.user.sub,
+      );
+    }
+
+    return { contactId, dealId, agentRunId };
   }
 }

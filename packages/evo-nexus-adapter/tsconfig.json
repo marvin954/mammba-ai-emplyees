@@ -1,0 +1,10 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": { "outDir": "dist", "rootDir": "src" },
+  "references": [
+    { "path": "../types" },
+    { "path": "../agent-runtime" },
+    { "path": "../ai-core" }
+  ],
+  "include": ["src"]
+}
